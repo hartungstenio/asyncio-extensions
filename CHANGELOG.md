@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - This CHANGELOG file.
 
+### Changed
+
+- Package building and publishing are run in separate jobs to avoid credential sharing.
+
 ## [0.0.2] - 2025-12-23
 
 ### Changed
