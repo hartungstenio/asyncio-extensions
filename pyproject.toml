@@ -1,15 +1,18 @@
 [project]
 name = "asyncio-extensions"
-description = ""
+description = "Some (maybe) useful extensions for asyncio"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
+license-files = ["LICENSE.txt"]
 authors = [
   { name = "Christian Hartung", email = "6785871+hartungstenio@users.noreply.github.com" },
 ]
-keywords = []
+keywords = ["asyncio", "tasks"]
 classifiers = [
   "Development Status :: 4 - Beta",
+  "Framework :: AsyncIO",
+  "Intended Audience :: Developers",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -17,6 +20,8 @@ classifiers = [
   "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
+  "Topic :: Software Development :: Libraries",
+  "Typing :: Typed",
 ]
 dependencies = []
 dynamic = ["version"]
