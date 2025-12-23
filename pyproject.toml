@@ -27,9 +27,11 @@ dependencies = []
 dynamic = ["version"]
 
 [project.urls]
+Source = "https://github.com/hartungstenio/asyncio-extensions"
+Changelog = "https://github.com/hartungstenio/asyncio-extensions/blob/main/CHANGELOG.md"
+ReleaseNotes = "https://github.com/hartungstenio/asyncio-extensions/releases"
 Documentation = "https://github.com/hartungstenio/asyncio-extensions#readme"
 Issues = "https://github.com/hartungstenio/asyncio-extensions/issues"
-Source = "https://github.com/hartungstenio/asyncio-extensions"
 
 [dependency-groups]
 dev = [
