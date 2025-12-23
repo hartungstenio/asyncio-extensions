@@ -37,7 +37,7 @@ dev = [
 ]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatch-vcs", "hatchling"]
 build-backend = "hatchling.build"
 
 [tool.coverage.run]
@@ -63,7 +63,7 @@ exclude_lines = [
 ]
 
 [tool.hatch.version]
-path = "src/asyncio_extensions/__about__.py"
+source = "vcs"
 
 [tool.hatch.envs.default]
 dependency-groups = ["dev"]
