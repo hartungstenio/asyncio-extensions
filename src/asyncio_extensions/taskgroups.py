@@ -2,7 +2,7 @@
 
 import asyncio
 from collections.abc import Coroutine
-from contextlib import AbstractAsyncContextManager, suppress
+from contextlib import AbstractAsyncContextManager
 from contextvars import Context
 from types import TracebackType
 from typing import Any, Never, Self, TypeVar
@@ -38,8 +38,11 @@ class TaskGroup(AbstractAsyncContextManager["TaskGroup"]):
         exc_value: BaseException | None,
         traceback: TracebackType | None,
     ) -> bool | None:
-        with suppress(TerminateTaskGroup):
+        try:  # noqa: SIM105
             await self.tasks.__aexit__(exc_type, exc_value, traceback)
+        except* TerminateTaskGroup:
+            pass
+
         return None
 
     def create_task(
