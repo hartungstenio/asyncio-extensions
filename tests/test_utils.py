@@ -26,7 +26,7 @@ async def test_sleep_forever(faker: Faker) -> None:
 
 
 async def test_sleep_forever_cycles_event_loop(faker: Faker) -> None:
-    with pytest.raises(TimeoutError):
+    with pytest.raises(TimeoutError):  # noqa: PT012
         async with (
             asyncio.timeout(faker.random_int(1, 10)),
             asyncio.TaskGroup() as tg,
@@ -34,5 +34,5 @@ async def test_sleep_forever_cycles_event_loop(faker: Faker) -> None:
             tasks = [tg.create_task(asyncio.sleep(i)) for i in range(7)]
             await sleep_forever()
 
-        assert all(t.done() for t in tasks)
-        assert not any(t.cancelled() for t in tasks)
+    assert all(t.done() for t in tasks)
+    assert not any(t.cancelled() for t in tasks)

@@ -1,3 +1,5 @@
+"""Extensions to interact with TaskGroups."""
+
 import asyncio
 from collections.abc import Coroutine
 from contextlib import AbstractAsyncContextManager, suppress
@@ -23,14 +25,14 @@ async def force_terminate_task_group() -> Never:
 class TaskGroup(AbstractAsyncContextManager["TaskGroup"]):
     """A version of asyncio.TaskGroup with a cancel method."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         self.tasks = asyncio.TaskGroup()
 
-    async def __aenter__(self) -> Self:
+    async def __aenter__(self) -> Self:  # noqa: D105
         await self.tasks.__aenter__()
         return self
 
-    async def __aexit__(
+    async def __aexit__(  # noqa: D105
         self,
         exc_type: type[BaseException] | None,
         exc_value: BaseException | None,
@@ -47,7 +49,9 @@ class TaskGroup(AbstractAsyncContextManager["TaskGroup"]):
         name: str | None = None,
         context: Context | None = None,
     ) -> asyncio.Task[T]:
+        """Create a new task in this group and return it."""
         return self.tasks.create_task(coro, name=name, context=context)
 
     def cancel(self) -> None:
+        """Cancel any remaining task in the TaskGroup."""
         self.create_task(force_terminate_task_group())

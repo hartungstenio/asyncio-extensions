@@ -1,2 +1,2 @@
 async def noop() -> None:
-    pass
+    """Do nothing."""
