@@ -1,4 +1,5 @@
-import asyncio
+"""Utility functions."""
+
 from collections.abc import Generator
 from typing import Any, Never
 
@@ -7,6 +8,7 @@ class YieldToEventLoop:
     """Helper class to give control back to the event loop."""
 
     def __await__(self) -> Generator[None, Any, None]:
+        """Yield control to the event loop."""
         yield
 
 
@@ -20,8 +22,6 @@ async def checkpoint() -> None:
 
 
 async def sleep_forever() -> Never:
-    """
-    Sleeps forever.
-    """
+    """Sleeps forever."""
     while True:
         await YieldToEventLoop()
