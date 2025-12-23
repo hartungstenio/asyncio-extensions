@@ -1,11 +1,9 @@
 import asyncio
+from collections.abc import Coroutine
 from contextlib import AbstractAsyncContextManager, suppress
-from typing import TYPE_CHECKING, Any, Never, Self, TypeVar
-
-if TYPE_CHECKING:
-    from collections.abc import Coroutine
-    from contextvars import Context
-    from types import TracebackType
+from contextvars import Context
+from types import TracebackType
+from typing import Any, Never, Self, TypeVar
 
 T = TypeVar("T")
 
