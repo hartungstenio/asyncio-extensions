@@ -8,7 +8,7 @@ from asyncio_extensions.taskgroups import (
     force_terminate_task_group,
 )
 
-from .utils import noop
+from . import noop
 
 pytestmark = pytest.mark.asyncio
 

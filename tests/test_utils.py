@@ -5,7 +5,7 @@ from faker import Faker
 
 from asyncio_extensions.utils import checkpoint, sleep_forever
 
-from .utils import noop
+from . import noop
 
 pytestmark = pytest.mark.asyncio
 
