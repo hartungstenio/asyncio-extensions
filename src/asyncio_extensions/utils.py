@@ -1,7 +1,10 @@
 """Utility functions."""
 
 from collections.abc import Generator
-from typing import Any, Never
+from typing import Any, Never, ParamSpec, TypeVar
+
+T = TypeVar("T")
+P = ParamSpec("P")
 
 
 class YieldToEventLoop:
@@ -25,3 +28,13 @@ async def sleep_forever() -> Never:
     """Sleeps forever."""
     while True:
         await YieldToEventLoop()
+
+
+async def noop(*args: P.args, **kwargs: P.kwargs) -> T:
+    """No-op function.
+
+    This can be used as a callback, when nothing should be done.
+
+    Yields control to the event loop.
+    """
+    return await YieldToEventLoop()

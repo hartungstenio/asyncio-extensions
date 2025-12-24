@@ -54,6 +54,11 @@ class DummyChannel:
         await sleep_forever()
 ```
 
+### noop
+`noop` works just like `checkpoint`, but it is intended to be used as callback to other processes.
+
+It accepts any number of positional and keyworks arguments, and simply yield control to the event loop once.
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first

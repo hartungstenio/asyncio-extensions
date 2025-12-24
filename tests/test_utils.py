@@ -3,16 +3,16 @@ import asyncio
 import pytest
 from faker import Faker
 
-from asyncio_extensions.utils import checkpoint, sleep_forever
+from asyncio_extensions.utils import checkpoint, noop, sleep_forever
 
-from . import noop
+from . import do_absolutely_nothing
 
 pytestmark = pytest.mark.asyncio
 
 
 async def test_checkpoint() -> None:
     async with asyncio.TaskGroup() as tg:
-        task = tg.create_task(noop())
+        task = tg.create_task(do_absolutely_nothing())
 
         await checkpoint()
 
@@ -36,3 +36,12 @@ async def test_sleep_forever_cycles_event_loop(faker: Faker) -> None:
 
     assert all(t.done() for t in tasks)
     assert not any(t.cancelled() for t in tasks)
+
+
+async def test_noop() -> None:
+    async with asyncio.TaskGroup() as tg:
+        task = tg.create_task(do_absolutely_nothing())
+
+        await noop(1, 2, "a", t=3, q=4)
+
+        assert task.done() is True

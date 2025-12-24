@@ -12,6 +12,7 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 - This CHANGELOG file.
 - pre-commit config.
+- `noop` function to be used as callback.
 
 ### Changed
 

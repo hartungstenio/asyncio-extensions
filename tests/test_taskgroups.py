@@ -8,7 +8,7 @@ from asyncio_extensions.taskgroups import (
     force_terminate_task_group,
 )
 
-from . import noop
+from . import do_absolutely_nothing
 
 pytestmark = pytest.mark.asyncio
 
@@ -23,7 +23,7 @@ async def test_force_terminate_task_group() -> None:
 class TestTaskGroup:
     async def test_runs_tasks(self) -> None:
         async with TaskGroup() as tg:
-            tasks = [tg.create_task(noop()) for _ in range(10)]
+            tasks = [tg.create_task(do_absolutely_nothing()) for _ in range(10)]
 
         assert all(t.done() for t in tasks)
         assert not any(t.cancelled() for t in tasks)
@@ -46,7 +46,7 @@ class TestTaskGroup:
             asyncio.timeout(1),
             TaskGroup() as tg,
         ):
-            task = tg.create_task(noop())
+            task = tg.create_task(do_absolutely_nothing())
             await task
             tg.cancel()
 
