@@ -16,6 +16,7 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Changed
 
 - Package building and publishing are run in separate jobs to avoid credential sharing.
+- Improved README
 
 ## [0.0.2] - 2025-12-23
 
