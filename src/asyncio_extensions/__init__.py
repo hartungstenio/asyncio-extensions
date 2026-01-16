@@ -1,9 +1,15 @@
 """Utility functions and extensions for AsyncIO."""
 
-from .taskgroups import TaskGroup, TerminateTaskGroup, force_terminate_task_group
+from .taskgroups import (
+    LimitedTaskGroup,
+    TaskGroup,
+    TerminateTaskGroup,
+    force_terminate_task_group,
+)
 from .utils import checkpoint, sleep_forever
 
 __all__ = [
+    "LimitedTaskGroup",
     "TaskGroup",
     "TerminateTaskGroup",
     "checkpoint",

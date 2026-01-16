@@ -23,7 +23,9 @@ classifiers = [
   "Topic :: Software Development :: Libraries",
   "Typing :: Typed",
 ]
-dependencies = []
+dependencies = [
+  "typing-extensions; python_version < '3.12'",
+]
 dynamic = ["version"]
 
 [project.urls]
