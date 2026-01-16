@@ -1,8 +1,12 @@
 import asyncio
+import sys
+from contextvars import copy_context
 
 import pytest
 
+from asyncio_extensions import checkpoint
 from asyncio_extensions.taskgroups import (
+    LimitedTaskGroup,
     TaskGroup,
     TerminateTaskGroup,
     force_terminate_task_group,
@@ -52,3 +56,54 @@ class TestTaskGroup:
 
         assert task.done() is True
         assert task.cancelled() is False
+
+
+class TestLimitedTaskGroup:
+    async def test_limits_concurrency(self) -> None:
+        max_concurrent = 3
+        current_concurrent = 0
+        peak_concurrent = 0
+
+        async def task() -> None:
+            nonlocal current_concurrent, peak_concurrent
+            current_concurrent += 1
+            peak_concurrent = max(peak_concurrent, current_concurrent)
+            await checkpoint()
+            current_concurrent -= 1
+
+        async with LimitedTaskGroup(max_concurrent=max_concurrent) as tg:
+            for _ in range(100):
+                tg.create_task(task())
+
+        assert peak_concurrent <= max_concurrent
+
+    async def test_create_task_params(self) -> None:
+        ctx = copy_context()
+        async with LimitedTaskGroup(max_concurrent=2) as tg:
+            task = tg.create_task(noop(), name="test_task", context=ctx)
+
+        assert task.get_name() == "test_task"
+
+        if sys.version_info >= (3, 12):
+            assert task.get_context() is ctx
+
+    @pytest.mark.skipif(sys.version_info < (3, 14), reason="Requires Python 3.14+")
+    async def test_create_task_params_eager(self) -> None:
+        ctx = copy_context()
+        async with LimitedTaskGroup(max_concurrent=2) as tg:
+            task = tg.create_task(
+                noop(),
+                name="test_task",
+                context=ctx,
+                eager_start=True,
+            )
+            tg.cancel()
+
+        assert task.get_name() == "test_task"
+        assert task.get_context() is ctx
+        assert task.done() is True
+
+    async def test_can_cancel(self) -> None:
+        tg = LimitedTaskGroup(max_concurrent=2)
+        assert hasattr(tg, "cancel")
+        assert callable(tg.cancel)

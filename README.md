@@ -33,6 +33,25 @@ async with TaskGroup() as tg:
     tg.cancel()
 ```
 
+#### LimitedTaskGroup
+A version of `TaskGroup` which limits the number of running tasks.
+
+```python
+import asyncio
+
+from asyncio_extensions import LimitedTaskGroup
+
+queue = asyncio.Queue()
+async with LimitedTaskGroup(3) as tg:
+    for _ in range(50):
+        tg.create_task(some_expensive_operation(queue))
+
+    await add_to_queue(queue)
+    await queue.join()
+    tg.cancel()
+```
+
+
 ### checkpoint
 The `checkpoint` function yields control do the event loop. It is a more elegant approach to do-nothing tasks since they give a chance for other tasks to run.
 
