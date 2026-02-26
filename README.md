@@ -74,6 +74,23 @@ class DummyChannel:
         await sleep_forever()
 ```
 
+### heartbeat
+The `heartbeat` function runs a given function at a regular interval.
+
+```python
+from asyncio_extensions import heartbeat
+
+interval = 5
+
+async def ping():
+    pass
+
+async with TaskGroup() as tg:
+    tg.create_task(heartbeat(5, ping))
+
+    await some_long_running_process()
+```
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first

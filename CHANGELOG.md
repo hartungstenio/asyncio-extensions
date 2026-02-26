@@ -14,6 +14,7 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 - pre-commit config.
 - test coverage using Codecov
 - LimitedTaskGroup to execute tasks limiting concurrency
+- heartbeat function to run something at regular interval
 
 ### Changed
 
