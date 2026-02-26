@@ -1,9 +1,11 @@
 import asyncio
+from contextlib import suppress
+from unittest import mock
 
 import pytest
 from faker import Faker
 
-from asyncio_extensions.utils import checkpoint, sleep_forever
+from asyncio_extensions.utils import checkpoint, heartbeat, sleep_forever
 
 from . import noop
 
@@ -36,3 +38,12 @@ async def test_sleep_forever_cycles_event_loop(faker: Faker) -> None:
 
     assert all(t.done() for t in tasks)
     assert not any(t.cancelled() for t in tasks)
+
+
+async def test_heartbeat() -> None:
+    mock_fn = mock.AsyncMock()
+    with suppress(TimeoutError):
+        async with asyncio.timeout(5):
+            await heartbeat(1, mock_fn, 1, 2, name="a")
+
+    assert mock_fn.await_args_list == [mock.call(1, 2, name="a")] * 4
