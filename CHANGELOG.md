@@ -8,6 +8,8 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+## [0.0.3] - 2026-02-26
+
 ### Added
 
 - This CHANGELOG file.
@@ -35,6 +37,7 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 - `checkpoint` function to yield control to the event loop.
 - `sleep_forever` function.
 
-[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.2...HEAD
+[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.3...HEAD
+[0.0.3]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.2...0.0.3
 [0.0.2]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.1...0.0.2
 [0.0.1]: https://github.com/hartungstenio/asyncio-extensions/releases/tag/0.0.1
