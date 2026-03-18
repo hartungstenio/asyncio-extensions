@@ -16,7 +16,8 @@ pip install asyncio-extensions
 ## Usage
 
 ### TaskGroup
-`asyncio-extensions` provide a cancellable version of AsyncIO's `TaskGroup`.
+
+`asyncio-extensions` provides a cancellable version of AsyncIO's `TaskGroup`.
 
 ```python
 import asyncio
@@ -34,7 +35,8 @@ async with TaskGroup() as tg:
 ```
 
 #### LimitedTaskGroup
-A version of `TaskGroup` which limits the number of running tasks.
+
+A version of `TaskGroup` that limits the number of concurrently running tasks.
 
 ```python
 import asyncio
@@ -51,9 +53,9 @@ async with LimitedTaskGroup(3) as tg:
     tg.cancel()
 ```
 
-
 ### checkpoint
-The `checkpoint` function yields control do the event loop. It is a more elegant approach to do-nothing tasks since they give a chance for other tasks to run.
+
+The `checkpoint` function yields control to the event loop. It is a more elegant approach to do-nothing tasks, giving other tasks a chance to run.
 
 ```python
 from asyncio_extensions import checkpoint
@@ -64,7 +66,8 @@ class DummyChannel:
 ```
 
 ### sleep_forever
-The `sleep_forever` function never returns. It simply keeps yielding control do the event loop.
+
+The `sleep_forever` function never returns. It simply keeps yielding control to the event loop.
 
 ```python
 from asyncio_extensions import sleep_forever
@@ -75,12 +78,11 @@ class DummyChannel:
 ```
 
 ### heartbeat
-The `heartbeat` function runs a given function at a regular interval.
+
+The `heartbeat` function runs a given callable at a regular interval.
 
 ```python
 from asyncio_extensions import heartbeat
-
-interval = 5
 
 async def ping():
     pass
@@ -91,13 +93,41 @@ async with TaskGroup() as tg:
     await some_long_running_process()
 ```
 
+### asyncify
+
+The `asyncify` function ensures a callable can be awaited. If the callable is already a coroutine function, it is returned as-is. Otherwise, it is wrapped so that calls run in a separate thread.
+
+```python
+from asyncio_extensions import asyncify
+
+def blocking_read(path: str) -> str:
+    with open(path) as f:
+        return f.read()
+
+async def main():
+    content = await asyncify(blocking_read)("data.txt")
+```
+
+It can also be used as a decorator:
+
+```python
+from asyncio_extensions import asyncify
+
+@asyncify
+def blocking_read(path: str) -> str:
+    with open(path) as f:
+        return f.read()
+
+async def main():
+    content = await blocking_read("data.txt")
+```
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
 to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
-
 
 ## License
 
