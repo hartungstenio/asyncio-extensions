@@ -8,6 +8,10 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+### Added
+
+- `asyncify` function to wrap synchronous callables so they can be awaited, running them in a separate thread via `asyncio.to_thread`.
+
 ## [0.0.3] - 2026-02-26
 
 ### Added
