@@ -58,13 +58,13 @@ jobs:
           hatch test -i py=${{ matrix.python-version }} --cover --junitxml=junit.xml
 
       - name: Upload results to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           report_type: test_results
           token: ${{ secrets.CODECOV_TOKEN }}
