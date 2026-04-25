@@ -50,7 +50,7 @@ class TaskGroup(asyncio.TaskGroup):
         exc_value: BaseException | None,
         traceback: TracebackType | None,
     ) -> None:
-        try:  # noqa: SIM105
+        try:
             await super().__aexit__(exc_type, exc_value, traceback)
         except* TerminateTaskGroup:
             pass
