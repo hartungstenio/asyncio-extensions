@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 from faker import Faker
 
-from asyncio_extensions.utils import checkpoint, heartbeat, sleep_forever
+from asyncio_extensions.utils import checkpoint, heartbeat, identity, sleep_forever
 
 from . import noop
 
@@ -47,3 +47,13 @@ async def test_heartbeat() -> None:
             await heartbeat(1, mock_fn, 1, 2, name="a")
 
     assert mock_fn.await_args_list == [mock.call(1, 2, name="a")] * 4
+
+
+async def test_identity() -> None:
+    async with asyncio.TaskGroup() as tg:
+        task = tg.create_task(noop())
+
+        result = await identity("x")
+
+        assert result == "x"
+        assert task.done() is True

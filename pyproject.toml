@@ -24,7 +24,7 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "typing-extensions; python_version < '3.12'",
+  "typing-extensions; python_version < '3.13'",
 ]
 dynamic = ["version"]
 
