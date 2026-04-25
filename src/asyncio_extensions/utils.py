@@ -31,10 +31,10 @@ async def sleep_forever() -> Never:
         await YieldToEventLoop()
 
 
-async def noop(result: T) -> T:
+async def identity(arg: T) -> T:
     """Give control back to the event loop once, then returns the given argument."""
     await YieldToEventLoop()
-    return result
+    return arg
 
 
 async def heartbeat(

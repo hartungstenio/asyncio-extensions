@@ -7,7 +7,7 @@ from .taskgroups import (
     TerminateTaskGroup,
     force_terminate_task_group,
 )
-from .utils import checkpoint, heartbeat, sleep_forever
+from .utils import checkpoint, heartbeat, identity, sleep_forever
 
 __all__ = [
     "LimitedTaskGroup",
@@ -17,5 +17,6 @@ __all__ = [
     "checkpoint",
     "force_terminate_task_group",
     "heartbeat",
+    "identity",
     "sleep_forever",
 ]

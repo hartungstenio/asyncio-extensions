@@ -10,6 +10,12 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Added
 
+- Rename `noop` to `identity` so the utility clearly expresses returning the passed value after yielding once to the event loop.
+
+## [0.0.4] - 2026-03-18
+
+### Added
+
 - `asyncify` function to wrap synchronous callables so they can be awaited, running them in a separate thread via `asyncio.to_thread`.
 
 ## [0.0.3] - 2026-02-26
@@ -41,7 +47,8 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 - `checkpoint` function to yield control to the event loop.
 - `sleep_forever` function.
 
-[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.3...HEAD
+[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.4...HEAD
+[0.0.4]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.3...0.0.4
 [0.0.3]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.2...0.0.3
 [0.0.2]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.1...0.0.2
 [0.0.1]: https://github.com/hartungstenio/asyncio-extensions/releases/tag/0.0.1

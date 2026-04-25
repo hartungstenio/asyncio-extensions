@@ -93,6 +93,28 @@ async with TaskGroup() as tg:
     await some_long_running_process()
 ```
 
+### identity
+
+The `identity` function yields control back to the event loop once, and then returns the value that was passed in. It is useful when you already have a cached result and want to create a task that behaves like any other asynchronous operation.
+
+```python
+from asyncio_extensions import TaskGroup, identity
+
+async def get_product(product_id: int):
+    cached_product = await product_cache.get(product_id)
+
+    async with TaskGroup() as tg:
+        if cached_product is not None:
+            task = tg.create_task(identity(cached_product))
+        else:
+            task = tg.create_task(fetch_product_from_api(product_id))
+
+        tg.create_task(update_search_metrics(product_id))
+
+    product = task.result()
+    return product
+```
+
 ### asyncify
 
 The `asyncify` function ensures a callable can be awaited. If the callable is already a coroutine function, it is returned as-is. Otherwise, it is wrapped so that calls run in a separate thread.
