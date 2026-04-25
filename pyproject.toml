@@ -79,7 +79,7 @@ dependency-groups = ["dev"]
 
 [tool.hatch.envs.hatch-static-analysis]
 config-path = "none"
-dependencies = ["ruff==0.14.*"]
+dependencies = ["ruff (==0.15.*)"]
 
 [tool.hatch.envs.hatch-test]
 extra-dependencies = [
