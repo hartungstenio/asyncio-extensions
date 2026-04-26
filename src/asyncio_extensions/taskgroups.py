@@ -1,32 +1,13 @@
 """Extensions to interact with TaskGroups."""
 
 import asyncio
-import sys
 from collections.abc import Coroutine
-from contextvars import Context
 from types import TracebackType
-from typing import Any, Never, TypedDict, TypeVar, Unpack
+from typing import Any, Never, TypeVar, Unpack
 
-from ._compat import override
+from ._compat import CreateTaskParams, override
 
 T = TypeVar("T")
-
-
-class _CreateTaskParams(TypedDict, total=False):
-    """Parameters for creating a task in a TaskGroup."""
-
-    name: str | None
-    context: Context | None
-
-
-if sys.version_info >= (3, 14):
-
-    class CreateTaskParams(_CreateTaskParams):
-        """Parameters for creating a task in a TaskGroup."""
-
-        eager_start: bool | None
-else:
-    CreateTaskParams = _CreateTaskParams
 
 
 class TerminateTaskGroup(BaseException):
