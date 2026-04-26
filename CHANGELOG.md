@@ -11,6 +11,8 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Added
 
 - Rename `noop` to `identity` so the utility clearly expresses returning the passed value after yielding once to the event loop.
+- Expose `iscoroutinefunction` e `markcoroutinefunction` functions.
+
 
 ## [0.0.4] - 2026-03-18
 

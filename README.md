@@ -144,6 +144,25 @@ async def main():
     content = await blocking_read("data.txt")
 ```
 
+### iscoroutinefunction and markcoroutinefunction
+
+The `iscoroutinefunction` helper checks whether a callable is already a coroutine function. It is re-exported from `inspect` on newer Python versions and from `asyncio` on older versions, depending on the runtime.
+
+The `markcoroutinefunction` helper marks a normal sync callable as a coroutine function. On Python 3.12+ this is `inspect.markcoroutinefunction`, but with the return type annotated so the function can be treated as a coroutine function in type-checked code.
+
+```python
+from asyncio_extensions import iscoroutinefunction, markcoroutinefunction
+
+async def main():
+    def sync_task() -> int:
+        return 42
+
+    assert iscoroutinefunction(sync_task) is False
+
+    marked = markcoroutinefunction(sync_task)
+    assert iscoroutinefunction(marked) is True
+```
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first

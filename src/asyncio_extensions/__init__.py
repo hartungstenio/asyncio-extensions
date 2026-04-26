@@ -1,6 +1,7 @@
 """Utility functions and extensions for AsyncIO."""
 
-from .bridge import asyncify
+from ._compat import iscoroutinefunction
+from .bridge import asyncify, markcoroutinefunction
 from .taskgroups import (
     LimitedTaskGroup,
     TaskGroup,
@@ -18,5 +19,7 @@ __all__ = [
     "force_terminate_task_group",
     "heartbeat",
     "identity",
+    "iscoroutinefunction",
+    "markcoroutinefunction",
     "sleep_forever",
 ]

@@ -4,7 +4,8 @@ from collections.abc import Awaitable
 
 import pytest
 
-from asyncio_extensions.bridge import asyncify
+from asyncio_extensions import iscoroutinefunction
+from asyncio_extensions.bridge import asyncify, markcoroutinefunction
 
 pytestmark = pytest.mark.asyncio
 
@@ -104,3 +105,17 @@ async def test_asyncify_decorator_concurrent_calls() -> None:
     await asyncio.gather(append(1), append(2), append(3))
 
     assert sorted(results) == [1, 2, 3]
+
+
+async def test_markcoroutinefunction_marks_callable() -> None:
+    def sync_func() -> int:
+        async def f() -> int:
+            return 1
+
+        return f()
+
+    marked = markcoroutinefunction(sync_func)
+
+    assert marked is sync_func
+    assert iscoroutinefunction(marked) is True
+    assert await marked() == 1
