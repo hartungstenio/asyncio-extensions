@@ -1,11 +1,12 @@
 """Utilities for bridging synchronous and asynchronous code."""
 
 import asyncio
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Coroutine
 from functools import wraps
-from typing import ParamSpec, TypeVar, overload
+from typing import Any, ParamSpec, TypeVar, cast, overload
 
 from ._compat import is_awaitable
+from ._compat import markcoroutinefunction as _markcoroutinefunction
 
 _P = ParamSpec("_P")
 _R = TypeVar("_R")
@@ -45,3 +46,15 @@ def asyncify(
         return await asyncio.to_thread(func, *args, **kwargs)
 
     return wrapper
+
+
+def markcoroutinefunction(f: Callable[_P, _R]) -> Callable[_P, Coroutine[Any, Any, _R]]:
+    """Mark a callable as a coroutine function.
+
+    Args:
+        f: The callable to mark as a coroutine function.
+
+    Returns:
+        The callable marked as a coroutine function.
+    """
+    return cast("Callable[_P, Coroutine[Any, Any, _R]]", _markcoroutinefunction(f))
