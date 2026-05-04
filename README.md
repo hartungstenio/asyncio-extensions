@@ -144,6 +144,94 @@ async def main():
     content = await blocking_read("data.txt")
 ```
 
+### iterate_queue
+
+The `iterate_queue` async generator wraps an `asyncio.Queue` so it can be consumed with a plain `async for` loop. It calls `task_done()` automatically after each item and stops when the queue is shut down (Python 3.13+) or when a sentinel value is dequeued.
+
+```python
+import asyncio
+
+from asyncio_extensions import iterate_queue
+
+async def process_items(queue: asyncio.Queue[str]) -> None:
+    async for item in iterate_queue(queue):
+        print(item)
+```
+
+To signal the end of the stream, call `queue.shutdown()` from the producer (Python 3.13+):
+
+```python
+async def producer(queue: asyncio.Queue[str]) -> None:
+    for item in ["a", "b", "c"]:
+        await queue.put(item)
+    queue.shutdown()
+```
+
+Alternatively, pass a custom sentinel object and put it in the queue when done:
+
+```python
+STOP = object()
+
+async def producer(queue: asyncio.Queue[object]) -> None:
+    for item in ["a", "b", "c"]:
+        await queue.put(item)
+    await queue.put(STOP)
+
+async def consumer(queue: asyncio.Queue[object]) -> None:
+    async for item in iterate_queue(queue, sentinel=STOP):
+        print(item)
+```
+
+### fill_queue
+
+The `fill_queue` coroutine fills an `asyncio.Queue` from any sync or async iterable. It accepts both `Iterable` and `AsyncIterable` sources and blocks if the queue is full until space becomes available.
+
+```python
+import asyncio
+
+from asyncio_extensions import fill_queue
+
+async def main() -> None:
+    queue: asyncio.Queue[int] = asyncio.Queue()
+    await fill_queue(range(10), queue)
+```
+
+It also works with async iterables:
+
+```python
+async def source():
+    for item in fetch_from_api():
+        yield item
+
+await fill_queue(source(), queue)
+```
+
+### merge_iterables
+
+The `merge_iterables` async context manager merges multiple sync or async iterables into a single interleaved stream, feeding all sources into a shared queue concurrently.
+
+```python
+import asyncio
+
+from asyncio_extensions import merge_iterables
+
+async def main() -> None:
+    async with merge_iterables([1, 2, 3], [4, 5, 6]) as stream:
+        async for item in stream:
+            print(item)
+```
+
+It also accepts async iterables, which can produce items in parallel:
+
+```python
+async def fetch_page(page: int):
+    ...  # yields items from a remote page
+
+async with merge_iterables(fetch_page(1), fetch_page(2)) as stream:
+    async for item in stream:
+        process(item)
+```
+
 ### iscoroutinefunction and markcoroutinefunction
 
 The `iscoroutinefunction` helper checks whether a callable is already a coroutine function. It is re-exported from `inspect` on newer Python versions and from `asyncio` on older versions, depending on the runtime.

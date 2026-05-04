@@ -20,9 +20,7 @@ def asyncify(func: Callable[_P, Awaitable[_R]], /) -> Callable[_P, Awaitable[_R]
 def asyncify(func: Callable[_P, _R], /) -> Callable[_P, Awaitable[_R]]: ...
 
 
-def asyncify(
-    func: Callable[_P, _R] | Callable[_P, Awaitable[_R]], /
-) -> Callable[_P, Awaitable[_R]]:
+def asyncify(func: Callable[_P, _R] | Callable[_P, Awaitable[_R]], /) -> Callable[_P, Awaitable[_R]]:
     """Ensure that a callable can be awaited.
 
     If ``func`` is already a coroutine function, it is returned as-is.

@@ -21,9 +21,13 @@ else:
 
 
 if sys.version_info >= (3, 13):
+    from asyncio import QueueShutDown
     from typing import TypeIs
 else:
     from typing_extensions import TypeIs
+
+    class QueueShutDown(Exception):  # noqa: N818
+        pass
 
 
 class _CreateTaskParams(TypedDict, total=False):
@@ -51,6 +55,7 @@ def is_awaitable(
 
 __all__ = [
     "CreateTaskParams",
+    "QueueShutDown",
     "TypeIs",
     "is_awaitable",
     "iscoroutinefunction",
