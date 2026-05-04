@@ -51,7 +51,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Setup Hatch
-        run: pipx  install --preinstall "virtualenv<21" hatch
+        run: pipx  install hatch
 
       - name: Run tests
         run: |
