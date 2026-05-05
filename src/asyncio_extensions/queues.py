@@ -116,4 +116,7 @@ async def merge_iterables(
 
         tg.create_task(join())
 
-        yield iterate_queue(queue)
+        try:
+            yield iterate_queue(queue)
+        finally:
+            tg.cancel()
