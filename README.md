@@ -167,10 +167,10 @@ async def producer(queue: asyncio.Queue[str]) -> None:
     queue.shutdown()
 ```
 
-Alternatively, pass a custom sentinel object and put it in the queue when done:
+On older Python versions, put the `STOP` sentinel in the queue when done:
 
 ```python
-STOP = object()
+from asyncio_extensions import iterate_queue, STOP
 
 async def producer(queue: asyncio.Queue[object]) -> None:
     for item in ["a", "b", "c"]:
@@ -178,9 +178,11 @@ async def producer(queue: asyncio.Queue[object]) -> None:
     await queue.put(STOP)
 
 async def consumer(queue: asyncio.Queue[object]) -> None:
-    async for item in iterate_queue(queue, sentinel=STOP):
+    async for item in iterate_queue(queue):
         print(item)
 ```
+
+> **Note:** `STOP` is deprecated on Python 3.13+. Prefer `queue.shutdown()` instead.
 
 ### fill_queue
 
