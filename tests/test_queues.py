@@ -1,6 +1,7 @@
 import asyncio
 import sys
 from collections.abc import AsyncGenerator
+from itertools import count
 
 import pytest
 
@@ -173,3 +174,16 @@ async def test_merge_iterables_empty_sources_yields_nothing() -> None:
         results = [item async for item in stream]
 
     assert results == []
+
+
+async def test_merge_iterables_early_exit_cancels_background_tasks() -> None:
+    initial_tasks = len(asyncio.all_tasks())
+    itrs = [count(), count(1)]
+
+    async with merge_iterables(*itrs) as stream:
+        assert len(asyncio.all_tasks()) > initial_tasks
+
+        async for _ in stream:
+            break
+
+    assert len(asyncio.all_tasks()) == initial_tasks
