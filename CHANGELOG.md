@@ -10,11 +10,18 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Added
 
-- Rename `noop` to `identity` so the utility clearly expresses returning the passed value after yielding once to the event loop.
 - Expose `iscoroutinefunction` e `markcoroutinefunction` functions.
 - `iterate_queue` async generator to consume an `asyncio.Queue` as an `async for` loop, stopping automatically when the queue is shut down.
+- Expose `iscoroutinefunction` and `markcoroutinefunction` functions.
+- `iterate_queue` async generator to consume an `asyncio.Queue` as an `async for` loop, stopping automatically when the queue is shut down or when the `STOP` sentinel is dequeued.
 - `fill_queue` coroutine to fill an `asyncio.Queue` from any sync or async iterable.
 - `merge_iterables` async context manager to merge multiple sync or async iterables into a single interleaved stream.
+- `STOP` sentinel object used to signal the end of an `iterate_queue` stream.
+
+### Changed
+
+- Rename `noop` to `identity` so the utility clearly expresses returning the passed value after yielding once to the event loop.
+
 
 
 ## [0.0.4] - 2026-03-18

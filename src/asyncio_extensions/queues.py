@@ -1,6 +1,7 @@
 """Utilities for working with :mod:`asyncio` queues."""
 
 import asyncio
+import sys
 from collections.abc import (
     AsyncGenerator,
     AsyncIterable,
@@ -16,10 +17,34 @@ from .taskgroups import TaskGroup
 T = TypeVar("T")
 
 
-Sentinel = object()
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+
+    @deprecated("Prefer using Queue.shutdown instead.")
+    class STOP:
+        """Sentinel that signals the end of an :func:`iterate_queue` stream.
+
+        Put this class in the queue to stop iteration::
+
+            await queue.put(STOP)
+
+        Deprecated:
+            Prefer :meth:`asyncio.Queue.shutdown` on Python 3.13+.
+        """
 
 
-async def iterate_queue(queue: asyncio.Queue[T], *, sentinel: object = Sentinel) -> AsyncGenerator[T]:
+else:
+
+    class STOP:
+        """Sentinel that signals the end of an :func:`iterate_queue` stream.
+
+        Put this class in the queue to stop iteration::
+
+            await queue.put(STOP)
+        """
+
+
+async def iterate_queue(queue: asyncio.Queue[T]) -> AsyncGenerator[T]:
     """Wrap an :class:`asyncio.Queue` as an async generator.
 
     Yields items from *queue* until the queue is shut down via
@@ -40,7 +65,7 @@ async def iterate_queue(queue: asyncio.Queue[T], *, sentinel: object = Sentinel)
     while True:
         try:
             it = await queue.get()
-            if it is sentinel:
+            if it is STOP:
                 queue.task_done()
                 break
             yield it
@@ -112,7 +137,7 @@ async def merge_iterables(
 
         async def join() -> None:
             await asyncio.wait(tasks)
-            await queue.put(Sentinel)  # type: ignore[arg-type]
+            await queue.put(STOP)  # type: ignore[arg-type]
 
         tg.create_task(join())
 

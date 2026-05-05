@@ -75,6 +75,7 @@ exclude_lines = [
 source = "vcs"
 
 [tool.hatch.envs.default]
+python = "3.13"
 dependency-groups = ["dev"]
 
 [tool.hatch.envs.hatch-static-analysis]

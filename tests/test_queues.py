@@ -6,7 +6,7 @@ from itertools import count
 import pytest
 
 from asyncio_extensions import checkpoint
-from asyncio_extensions.queues import fill_queue, iterate_queue, merge_iterables
+from asyncio_extensions.queues import STOP, fill_queue, iterate_queue, merge_iterables
 
 pytestmark = pytest.mark.asyncio
 
@@ -69,27 +69,15 @@ async def test_iterate_queue_empty_queue_blocks_until_item_available() -> None:
 
 
 async def test_iterate_queue_sentinel_in_queue_stops_iteration() -> None:
-    my_sentinel = object()
     queue: asyncio.Queue[object] = asyncio.Queue()
 
     await queue.put(1)
     await queue.put(2)
-    await queue.put(my_sentinel)
+    await queue.put(STOP)
 
-    results = [item async for item in iterate_queue(queue, sentinel=my_sentinel)]
+    results = [item async for item in iterate_queue(queue)]
 
     assert results == [1, 2]
-
-
-async def test_iterate_queue_sentinel_not_yielded() -> None:
-    my_sentinel = object()
-    queue: asyncio.Queue[object] = asyncio.Queue()
-
-    await queue.put(my_sentinel)
-
-    results = [item async for item in iterate_queue(queue, sentinel=my_sentinel)]
-
-    assert results == []
 
 
 # fill_queue
