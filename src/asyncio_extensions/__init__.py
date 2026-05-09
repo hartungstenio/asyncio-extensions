@@ -7,6 +7,7 @@ from .queues import STOP as STOP
 from .queues import fill_queue as fill_queue
 from .queues import iterate_queue as iterate_queue
 from .queues import merge_iterables as merge_iterables
+from .queues import safe_gen as safe_gen
 from .taskgroups import LimitedTaskGroup as LimitedTaskGroup
 from .taskgroups import TaskGroup as TaskGroup
 from .taskgroups import TerminateTaskGroup as TerminateTaskGroup

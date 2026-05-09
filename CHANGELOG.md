@@ -8,6 +8,10 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+### Added
+
+- `safe_gen` decorator to wrap async generator functions as context managers, guaranteeing cleanup on early exit and handling `GeneratorExit` from exception groups.
+
 ## [0.0.5] - 2026-05-05
 
 ### Added

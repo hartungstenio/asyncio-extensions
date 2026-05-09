@@ -6,7 +6,7 @@ from itertools import count
 import pytest
 
 from asyncio_extensions import checkpoint
-from asyncio_extensions.queues import STOP, fill_queue, iterate_queue, merge_iterables
+from asyncio_extensions.queues import STOP, fill_queue, iterate_queue, merge_iterables, safe_gen
 
 pytestmark = pytest.mark.asyncio
 
@@ -175,3 +175,80 @@ async def test_merge_iterables_early_exit_cancels_background_tasks() -> None:
             break
 
     assert len(asyncio.all_tasks()) == initial_tasks
+
+
+async def test_safe_gen_full_iteration() -> None:
+    @safe_gen
+    async def gen(items: int) -> AsyncGenerator[int]:
+        for i in range(items):
+            yield i
+
+    async with gen(5) as stream:
+        results = [i async for i in stream]
+
+    assert results == list(range(5))
+
+
+async def test_safe_gen_closes_on_break() -> None:
+    closed = False
+
+    @safe_gen
+    async def gen(items: int) -> AsyncGenerator[int]:
+        try:
+            for i in range(items):
+                yield i
+        except GeneratorExit:
+            nonlocal closed
+            closed = True
+            raise
+
+    async with gen(5) as stream:
+        async for _i in stream:
+            break
+
+    assert closed
+
+
+async def test_safe_gen_closes_on_exception() -> None:
+    closed = False
+
+    @safe_gen
+    async def gen(items: int) -> AsyncGenerator[int]:
+        try:
+            for i in range(items):
+                yield i
+        except GeneratorExit:
+            nonlocal closed
+            closed = True
+            raise
+
+    with pytest.raises(RuntimeError):  # noqa: PT012
+        async with gen(5) as stream:
+            async for _ in stream:
+                raise RuntimeError
+
+    assert closed
+
+
+async def test_safe_gen_closes_on_break_with_internal_task_group() -> None:
+    closed = False
+
+    @safe_gen
+    async def gen(items: int) -> AsyncGenerator[int]:
+        try:
+            async with asyncio.TaskGroup() as tg:
+                tg.create_task(asyncio.sleep(10))
+                tg.create_task(asyncio.sleep(15))
+
+                for i in range(items):
+                    yield i
+        except* GeneratorExit:
+            nonlocal closed
+            closed = True
+            raise
+
+    async with gen(5) as stream:
+        async for _i in stream:
+            break
+
+    assert closed

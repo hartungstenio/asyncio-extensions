@@ -2,19 +2,16 @@
 
 import asyncio
 import sys
-from collections.abc import (
-    AsyncGenerator,
-    AsyncIterable,
-    AsyncIterator,
-    Iterable,
-)
-from contextlib import asynccontextmanager
-from typing import TypeVar
+from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator, Callable, Iterable
+from contextlib import AbstractAsyncContextManager, aclosing, asynccontextmanager
+from functools import wraps
+from typing import Any, ParamSpec, TypeVar
 
 from ._compat import QueueShutDown
 from .taskgroups import TaskGroup
 
 T = TypeVar("T")
+P = ParamSpec("P")
 
 
 if sys.version_info >= (3, 13):
@@ -145,3 +142,41 @@ async def merge_iterables(
             yield iterate_queue(queue)
         finally:
             tg.cancel()
+
+
+def safe_gen(
+    fn: Callable[P, AsyncGenerator[T, Any]],
+) -> Callable[P, AbstractAsyncContextManager[AsyncIterator[T]]]:
+    """Wrap an async generator function so it is always closed on exit.
+
+    Async generators must be explicitly closed when iteration is abandoned early — otherwise
+    they leak resources and keep running indefinitely. This decorator converts an async
+    generator function into a context manager that guarantees cleanup via ``aclosing``,
+    and also suppresses ``GeneratorExit`` raised inside an exception group.
+
+    Example::
+
+        @safe_gen
+        async def iterate_slowly(times: int) -> AsyncGenerator[int]:
+            for i in range(times):
+                await asyncio.sleep(10)
+                yield i
+
+        async with iterate_slowly(5) as stream:
+            async for item in stream:
+                print(item)
+
+                if item == 2:
+                    break  # generator is closed automatically on exit
+    """
+
+    @asynccontextmanager
+    @wraps(fn)
+    async def decorator(*args: P.args, **kwargs: P.kwargs) -> AsyncIterator[AsyncGenerator[T]]:
+        try:
+            async with aclosing(fn(*args, **kwargs)) as agen:
+                yield agen
+        except* GeneratorExit:
+            pass
+
+    return decorator
