@@ -29,11 +29,11 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-Source = "https://github.com/hartungstenio/asyncio-extensions"
 Changelog = "https://github.com/hartungstenio/asyncio-extensions/blob/main/CHANGELOG.md"
-ReleaseNotes = "https://github.com/hartungstenio/asyncio-extensions/releases"
 Documentation = "https://github.com/hartungstenio/asyncio-extensions#readme"
 Issues = "https://github.com/hartungstenio/asyncio-extensions/issues"
+ReleaseNotes = "https://github.com/hartungstenio/asyncio-extensions/releases"
+Source = "https://github.com/hartungstenio/asyncio-extensions"
 
 [dependency-groups]
 dev = [
@@ -53,9 +53,7 @@ build-backend = "hatchling.build"
 source_pkgs = ["asyncio_extensions", "tests"]
 branch = true
 parallel = true
-omit = [
-  "src/asyncio_extensions/__about__.py",
-]
+omit = []
 
 [tool.coverage.paths]
 asyncio_extensions = [
@@ -65,10 +63,10 @@ asyncio_extensions = [
 tests = ["tests", "*/asyncio-extensions/tests"]
 
 [tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
+exclude_also = [
+  'class .*\bProtocol\):',
+  '@(abc\.)?abstractmethod',
+  '@(typing\.)?overload',
 ]
 
 [tool.hatch.version]
