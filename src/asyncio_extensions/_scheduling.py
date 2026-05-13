@@ -17,16 +17,15 @@ class _YieldToEventLoop:
 
 
 async def checkpoint() -> None:
-    """
-    Give control back to the eventloop.
+    """Yield control to the event loop.
 
-    This has the same effect of and asyncio.sleep(0), but it is more semantic
+    Equivalent to ``asyncio.sleep(0)`` but more expressive.
     """
     return await _YieldToEventLoop()
 
 
 async def sleep_forever() -> Never:
-    """Sleeps forever."""
+    """Sleep forever, yielding to the event loop on every iteration."""
     while True:
         await _YieldToEventLoop()
 
@@ -37,7 +36,14 @@ async def heartbeat(
     *args: P.args,
     **kwargs: P.kwargs,
 ) -> None:
-    """Run :arg:`fn` with the given args at regular interval."""
+    """Call *fn* repeatedly, waiting *interval* seconds between each call.
+
+    Args:
+        interval: Number of seconds to wait between calls.
+        fn: The async callable to invoke.
+        *args: Positional arguments forwarded to *fn*.
+        **kwargs: Keyword arguments forwarded to *fn*.
+    """
     while True:
         await asyncio.sleep(interval)
         await fn(*args, **kwargs)

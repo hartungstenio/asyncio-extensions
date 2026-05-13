@@ -1,4 +1,4 @@
-"""Utilities for working with :mod:`asyncio` queues."""
+"""Utilities for async iteration: queue generators, stream merging, and safe generator cleanup."""
 
 import asyncio
 import sys

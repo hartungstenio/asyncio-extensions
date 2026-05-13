@@ -1,4 +1,4 @@
-"""Extensions to interact with TaskGroups."""
+"""Extensions to :mod:`asyncio` task groups."""
 
 import asyncio
 from collections.abc import Coroutine
@@ -11,19 +11,21 @@ T = TypeVar("T")
 
 
 class TerminateTaskGroup(BaseException):
-    """Signal to terminate a task group.
+    """Signal raised to terminate a :class:`TaskGroup` early.
 
-    Technically not an exception, so inherits from `BaseException`.
+    Inherits from :exc:`BaseException` to bypass normal exception handling
+    inside the group. Raised by :func:`force_terminate_task_group` and
+    suppressed by :meth:`TaskGroup.__aexit__`.
     """
 
 
 async def force_terminate_task_group() -> Never:
-    """Force termination of a task group."""
+    """Raise :exc:`TerminateTaskGroup` to stop the enclosing task group."""
     raise TerminateTaskGroup
 
 
 class TaskGroup(asyncio.TaskGroup):
-    """A version of asyncio.TaskGroup with a cancel method."""
+    """An :class:`asyncio.TaskGroup` extended with a :meth:`cancel` method."""
 
     async def __aexit__(
         self,
@@ -37,19 +39,18 @@ class TaskGroup(asyncio.TaskGroup):
             pass
 
     def cancel(self) -> None:
-        """Cancel any remaining task in the TaskGroup."""
+        """Schedule cancellation of all remaining tasks in the group."""
         self.create_task(force_terminate_task_group())
 
 
 class LimitedTaskGroup(TaskGroup):
-    """A TaskGroup that limits the number of concurrent tasks."""
+    """A :class:`TaskGroup` that caps the number of tasks running concurrently.
+
+    Args:
+        max_concurrent: Maximum number of tasks allowed to run at the same time.
+    """
 
     def __init__(self, max_concurrent: int) -> None:
-        """Initialize the LimitedTaskGroup.
-
-        Args:
-            max_concurrent: Maximum number of concurrent tasks.
-        """
         super().__init__()
         self._semaphore = asyncio.Semaphore(max_concurrent)
 
@@ -63,12 +64,12 @@ class LimitedTaskGroup(TaskGroup):
         coro: Coroutine[Any, Any, T],
         **kwargs: Unpack[CreateTaskParams],
     ) -> asyncio.Task[T]:
-        """Create a task within the limited concurrency context.
+        """Schedule *coro* as a task, subject to the concurrency limit.
 
         Args:
             coro: The coroutine to run as a task.
 
         Returns:
-            The created asyncio Task.
+            The created :class:`asyncio.Task`.
         """
         return super().create_task(self._task_wrapper(coro), **kwargs)
