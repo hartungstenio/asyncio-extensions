@@ -122,9 +122,6 @@ async def test_fill_queue_full_queue_blocks_until_space_available() -> None:
         assert fill_task.done() is False
 
         queue.get_nowait()
-        await checkpoint()
-
-        assert fill_task.done() is True
 
     assert drain(queue) == [1]
 

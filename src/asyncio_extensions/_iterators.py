@@ -8,6 +8,7 @@ from functools import wraps
 from typing import Any, ParamSpec, TypeVar
 
 from ._compat import QueueShutDown
+from ._sync import asyncify_iterable
 from ._task_groups import TaskGroup
 
 T = TypeVar("T")
@@ -72,17 +73,6 @@ async def iterate_queue(queue: asyncio.Queue[T]) -> AsyncGenerator[T]:
             queue.task_done()
 
 
-def _ensure_async_iterable(itr: AsyncIterable[T] | Iterable[T]) -> AsyncIterable[T]:
-    if isinstance(itr, AsyncIterable):
-        return itr
-
-    async def gen() -> AsyncIterable[T]:
-        for it in itr:
-            yield it
-
-    return gen()
-
-
 async def fill_queue(itr: AsyncIterable[T] | Iterable[T], queue: asyncio.Queue[T]) -> None:
     """Fill *queue* with all items from *itr*.
 
@@ -97,7 +87,7 @@ async def fill_queue(itr: AsyncIterable[T] | Iterable[T], queue: asyncio.Queue[T
 
         await fill_queue(range(10), q)
     """
-    async for it in _ensure_async_iterable(itr):
+    async for it in asyncify_iterable(itr):
         await queue.put(it)
 
 

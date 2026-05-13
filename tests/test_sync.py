@@ -1,11 +1,11 @@
 import asyncio
 import threading
-from collections.abc import Awaitable
+from collections.abc import AsyncGenerator, Awaitable
 
 import pytest
 
 from asyncio_extensions import iscoroutinefunction
-from asyncio_extensions._sync import asyncify, identity, is_awaitable, markcoroutinefunction
+from asyncio_extensions._sync import asyncify, asyncify_iterable, identity, is_awaitable, markcoroutinefunction
 
 from . import noop
 
@@ -162,3 +162,23 @@ async def test_markcoroutinefunction_marks_callable() -> None:
     assert marked is sync_func
     assert iscoroutinefunction(marked) is True
     assert await marked() == 1
+
+
+@pytest.mark.asyncio
+async def test_asyncify_iterable_async_iterable_returned_unchanged() -> None:
+    async def source() -> AsyncGenerator[int]:
+        yield 1
+
+    original = source()
+    assert asyncify_iterable(original) is original
+
+
+@pytest.mark.asyncio
+async def test_asyncify_iterable_sync_iterable_yields_items_and_checkpoints() -> None:
+    async with asyncio.TaskGroup() as tg:
+        task = tg.create_task(asyncio.sleep(0))
+
+        results = [item async for item in asyncify_iterable([1, 2, 3])]
+
+    assert results == [1, 2, 3]
+    assert task.done()

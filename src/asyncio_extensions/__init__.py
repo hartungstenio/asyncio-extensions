@@ -11,6 +11,7 @@ from ._scheduling import checkpoint as checkpoint
 from ._scheduling import heartbeat as heartbeat
 from ._scheduling import sleep_forever as sleep_forever
 from ._sync import asyncify as asyncify
+from ._sync import asyncify_iterable as asyncify_iterable
 from ._sync import identity as identity
 from ._sync import is_awaitable as is_awaitable
 from ._sync import markcoroutinefunction as markcoroutinefunction
