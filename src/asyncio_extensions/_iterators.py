@@ -8,7 +8,7 @@ from functools import wraps
 from typing import Any, ParamSpec, TypeVar
 
 from ._compat import QueueShutDown
-from .taskgroups import TaskGroup
+from ._task_groups import TaskGroup
 
 T = TypeVar("T")
 P = ParamSpec("P")

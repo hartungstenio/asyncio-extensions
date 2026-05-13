@@ -6,7 +6,7 @@ from itertools import count
 import pytest
 
 from asyncio_extensions import checkpoint
-from asyncio_extensions.queues import STOP, fill_queue, iterate_queue, merge_iterables, safe_gen
+from asyncio_extensions._iterators import STOP, fill_queue, iterate_queue, merge_iterables, safe_gen
 
 pytestmark = pytest.mark.asyncio
 
