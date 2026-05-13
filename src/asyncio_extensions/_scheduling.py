@@ -8,7 +8,7 @@ T = TypeVar("T")
 P = ParamSpec("P")
 
 
-class YieldToEventLoop:
+class _YieldToEventLoop:
     """Helper class to give control back to the event loop."""
 
     def __await__(self) -> Generator[None, Any, None]:
@@ -22,19 +22,13 @@ async def checkpoint() -> None:
 
     This has the same effect of and asyncio.sleep(0), but it is more semantic
     """
-    return await YieldToEventLoop()
+    return await _YieldToEventLoop()
 
 
 async def sleep_forever() -> Never:
     """Sleeps forever."""
     while True:
-        await YieldToEventLoop()
-
-
-async def identity(arg: T) -> T:
-    """Give control back to the event loop once, then returns the given argument."""
-    await YieldToEventLoop()
-    return arg
+        await _YieldToEventLoop()
 
 
 async def heartbeat(

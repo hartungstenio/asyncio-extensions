@@ -5,11 +5,20 @@ from collections.abc import Awaitable, Callable, Coroutine
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar, cast, overload
 
-from ._compat import is_awaitable
+from ._compat import TypeIs, iscoroutinefunction
 from ._compat import markcoroutinefunction as _markcoroutinefunction
+from ._scheduling import checkpoint
 
 _P = ParamSpec("_P")
 _R = TypeVar("_R")
+_T = TypeVar("_T")
+
+
+def is_awaitable(
+    func: Callable[_P, _R] | Callable[_P, Awaitable[_R]],
+) -> TypeIs[Callable[_P, Awaitable[_R]]]:
+    """Return ``True`` if *func* is a coroutine function."""
+    return iscoroutinefunction(func)
 
 
 @overload
@@ -56,3 +65,9 @@ def markcoroutinefunction(f: Callable[_P, _R]) -> Callable[_P, Coroutine[Any, An
         The callable marked as a coroutine function.
     """
     return cast("Callable[_P, Coroutine[Any, Any, _R]]", _markcoroutinefunction(f))
+
+
+async def identity(arg: _T) -> _T:
+    """Yield to the event loop once, then return *arg* unchanged."""
+    await checkpoint()
+    return arg

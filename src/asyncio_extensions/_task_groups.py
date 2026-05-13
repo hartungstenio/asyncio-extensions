@@ -25,7 +25,7 @@ async def force_terminate_task_group() -> Never:
 class TaskGroup(asyncio.TaskGroup):
     """A version of asyncio.TaskGroup with a cancel method."""
 
-    async def __aexit__(  # noqa: D105
+    async def __aexit__(
         self,
         exc_type: type[BaseException] | None,
         exc_value: BaseException | None,

@@ -1,6 +1,5 @@
-import inspect
 import sys
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from contextvars import Context
 from typing import ParamSpec, TypedDict, TypeVar
 
@@ -47,17 +46,10 @@ else:
     CreateTaskParams = _CreateTaskParams
 
 
-def is_awaitable(
-    func: Callable[_P, _R] | Callable[_P, Awaitable[_R]],
-) -> TypeIs[Callable[_P, Awaitable[_R]]]:
-    return inspect.iscoroutinefunction(func)
-
-
 __all__ = [
     "CreateTaskParams",
     "QueueShutDown",
     "TypeIs",
-    "is_awaitable",
     "iscoroutinefunction",
     "markcoroutinefunction",
     "override",

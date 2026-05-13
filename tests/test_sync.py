@@ -5,11 +5,34 @@ from collections.abc import Awaitable
 import pytest
 
 from asyncio_extensions import iscoroutinefunction
-from asyncio_extensions.bridge import asyncify, markcoroutinefunction
+from asyncio_extensions._sync import asyncify, identity, is_awaitable, markcoroutinefunction
 
-pytestmark = pytest.mark.asyncio
+from . import noop
 
 
+def test_is_awaitable_returns_true_for_coroutine_function() -> None:
+    async def coro() -> None: ...
+
+    assert is_awaitable(coro) is True
+
+
+def test_is_awaitable_returns_false_for_sync_function() -> None:
+    def func() -> None: ...
+
+    assert is_awaitable(func) is False
+
+
+def test_is_awaitable_returns_false_for_lambda() -> None:
+    assert is_awaitable(lambda: None) is False
+
+
+def test_is_awaitable_returns_true_for_markcoroutinefunction() -> None:
+    def func() -> None: ...
+
+    assert is_awaitable(markcoroutinefunction(func)) is True
+
+
+@pytest.mark.asyncio
 async def test_asyncify_sync_returns_awaitable() -> None:
     def add(a: int, b: int) -> int:
         return a + b
@@ -20,6 +43,7 @@ async def test_asyncify_sync_returns_awaitable() -> None:
     assert await result == add(1, 2)
 
 
+@pytest.mark.asyncio
 async def test_asyncify_sync_runs_in_thread() -> None:
     caller_thread = threading.current_thread()
     func_thread: threading.Thread | None = None
@@ -34,6 +58,7 @@ async def test_asyncify_sync_runs_in_thread() -> None:
     assert func_thread is not caller_thread
 
 
+@pytest.mark.asyncio
 async def test_asyncify_sync_preserves_wraps_metadata() -> None:
     def my_func() -> None:
         """My docstring."""
@@ -44,6 +69,7 @@ async def test_asyncify_sync_preserves_wraps_metadata() -> None:
     assert wrapped.__doc__ == "My docstring."
 
 
+@pytest.mark.asyncio
 async def test_asyncify_async_returns_same_function() -> None:
     async def coro() -> int:
         return 42
@@ -51,6 +77,7 @@ async def test_asyncify_async_returns_same_function() -> None:
     assert asyncify(coro) is coro
 
 
+@pytest.mark.asyncio
 async def test_asyncify_as_decorator_on_sync() -> None:
     @asyncify
     def multiply(a: int, b: int) -> int:
@@ -61,6 +88,7 @@ async def test_asyncify_as_decorator_on_sync() -> None:
     assert result == 12  # noqa: PLR2004
 
 
+@pytest.mark.asyncio
 async def test_asyncify_as_decorator_on_async() -> None:
     @asyncify
     async def subtract(a: int, b: int) -> int:
@@ -71,6 +99,7 @@ async def test_asyncify_as_decorator_on_async() -> None:
     assert result == 7  # noqa: PLR2004
 
 
+@pytest.mark.asyncio
 async def test_asyncify_decorator_preserves_name() -> None:
     @asyncify
     def named_func() -> None:
@@ -80,6 +109,7 @@ async def test_asyncify_decorator_preserves_name() -> None:
     assert named_func.__doc__ == "Has a name."
 
 
+@pytest.mark.asyncio
 async def test_asyncify_decorator_runs_sync_in_thread() -> None:
     caller_thread = threading.current_thread()
     seen_thread: threading.Thread | None = None
@@ -95,6 +125,7 @@ async def test_asyncify_decorator_runs_sync_in_thread() -> None:
     assert seen_thread is not caller_thread
 
 
+@pytest.mark.asyncio
 async def test_asyncify_decorator_concurrent_calls() -> None:
     results: list[int] = []
 
@@ -107,6 +138,18 @@ async def test_asyncify_decorator_concurrent_calls() -> None:
     assert sorted(results) == [1, 2, 3]
 
 
+@pytest.mark.asyncio
+async def test_identity() -> None:
+    async with asyncio.TaskGroup() as tg:
+        task = tg.create_task(noop())
+
+        result = await identity("x")
+
+        assert result == "x"
+        assert task.done() is True
+
+
+@pytest.mark.asyncio
 async def test_markcoroutinefunction_marks_callable() -> None:
     def sync_func() -> int:
         async def f() -> int:

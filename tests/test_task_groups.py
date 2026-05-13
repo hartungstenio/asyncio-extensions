@@ -5,7 +5,7 @@ from contextvars import copy_context
 import pytest
 
 from asyncio_extensions import checkpoint
-from asyncio_extensions.taskgroups import (
+from asyncio_extensions._task_groups import (
     LimitedTaskGroup,
     TaskGroup,
     TerminateTaskGroup,

@@ -11,6 +11,12 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Added
 
 - `safe_gen` decorator to wrap async generator functions as context managers, guaranteeing cleanup on early exit and handling `GeneratorExit` from exception groups.
+- Expose `is_awaitable` predicate to check whether a callable is a coroutine function.
+- Expose `CreateTaskParams` typed dict for use with `TaskGroup.create_task` type annotations.
+
+### Changed
+
+- All submodules are now private (prefixed with `_`); the public API remains unchanged and is imported exclusively via the top-level package.
 
 ## [0.0.5] - 2026-05-05
 
