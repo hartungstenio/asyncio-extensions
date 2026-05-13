@@ -1,7 +1,7 @@
 """Utilities for bridging synchronous and asynchronous code."""
 
 import asyncio
-from collections.abc import Awaitable, Callable, Coroutine
+from collections.abc import AsyncIterable, Awaitable, Callable, Coroutine, Iterable
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar, cast, overload
 
@@ -72,3 +72,28 @@ async def identity(arg: _T) -> _T:
     """Yield to the event loop once, then return *arg* unchanged."""
     await checkpoint()
     return arg
+
+
+def asyncify_iterable(itr: AsyncIterable[_T] | Iterable[_T]) -> AsyncIterable[_T]:
+    """Return *itr* as an :class:`~collections.abc.AsyncIterable`.
+
+    If *itr* is already an :class:`~collections.abc.AsyncIterable`, return it
+    unchanged. Otherwise, wrap it in an async generator that yields each item
+    and calls :func:`checkpoint` between items to avoid monopolising the event
+    loop on large inputs.
+
+    Args:
+        itr: A synchronous or asynchronous iterable.
+
+    Returns:
+        An :class:`~collections.abc.AsyncIterable` producing the same items as *itr*.
+    """
+    if isinstance(itr, AsyncIterable):
+        return itr
+
+    async def gen() -> AsyncIterable[_T]:
+        for it in itr:
+            yield it
+            await checkpoint()
+
+    return gen()

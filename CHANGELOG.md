@@ -8,15 +8,19 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+## [0.1.0] - 2026-05-13
+
 ### Added
 
 - `safe_gen` decorator to wrap async generator functions as context managers, guaranteeing cleanup on early exit and handling `GeneratorExit` from exception groups.
-- Expose `is_awaitable` predicate to check whether a callable is a coroutine function.
-- Expose `CreateTaskParams` typed dict for use with `TaskGroup.create_task` type annotations.
+- `is_awaitable` predicate to check whether a callable is a coroutine function.
+- `CreateTaskParams` typed dict for use with `TaskGroup.create_task` type annotations.
+- `asyncify_iterable` to wrap a synchronous iterable as an async iterable, yielding to the event loop between items.
 
 ### Changed
 
 - All submodules are now private (prefixed with `_`); the public API remains unchanged and is imported exclusively via the top-level package.
+- `fill_queue` and `merge_iterables` now yield to the event loop between items when consuming a synchronous iterable, preventing them from monopolising the event loop on large inputs.
 
 ## [0.0.5] - 2026-05-05
 
@@ -74,7 +78,8 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 - `checkpoint` function to yield control to the event loop.
 - `sleep_forever` function.
 
-[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.5...HEAD
+[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.1.0...HEAD
+[0.1.0]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.5...0.1.0
 [0.0.5]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.4...0.0.5
 [0.0.4]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.3...0.0.4
 [0.0.3]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.2...0.0.3
