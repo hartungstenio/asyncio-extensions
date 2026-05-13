@@ -32,17 +32,15 @@ def asyncify(func: Callable[_P, _R], /) -> Callable[_P, Awaitable[_R]]: ...
 def asyncify(func: Callable[_P, _R] | Callable[_P, Awaitable[_R]], /) -> Callable[_P, Awaitable[_R]]:
     """Ensure that a callable can be awaited.
 
-    If ``func`` is already a coroutine function, it is returned as-is.
-    Otherwise, it is wrapped with :func:`asyncio.to_thread`, so that calls to
-    the returned callable will run ``func`` in a separate thread and return an
-    awaitable result.
-
+    If *func* is already a coroutine function, return it unchanged.
+    Otherwise, wrap it with :func:`asyncio.to_thread` so that calls
+    run *func* in a separate thread.
 
     Args:
-        func: A callable that is either synchronous or already a coroutine function.
+        func: A synchronous callable or coroutine function.
 
     Returns:
-        A callable with the same signature as ``func`` that returns an
+        A callable with the same signature as *func* that returns an
         :class:`~collections.abc.Awaitable`.
     """
     if is_awaitable(func):
@@ -56,13 +54,16 @@ def asyncify(func: Callable[_P, _R] | Callable[_P, Awaitable[_R]], /) -> Callabl
 
 
 def markcoroutinefunction(f: Callable[_P, _R]) -> Callable[_P, Coroutine[Any, Any, _R]]:
-    """Mark a callable as a coroutine function.
+    """Mark *f* as a coroutine function without making it async.
+
+    After marking, :func:`asyncio.iscoroutinefunction` returns ``True``
+    for *f* even though it is a plain callable.
 
     Args:
-        f: The callable to mark as a coroutine function.
+        f: The callable to mark.
 
     Returns:
-        The callable marked as a coroutine function.
+        *f* with its coroutine marker set.
     """
     return cast("Callable[_P, Coroutine[Any, Any, _R]]", _markcoroutinefunction(f))
 

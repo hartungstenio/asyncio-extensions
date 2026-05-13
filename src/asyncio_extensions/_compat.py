@@ -39,7 +39,7 @@ class _CreateTaskParams(TypedDict, total=False):
 if sys.version_info >= (3, 14):
 
     class CreateTaskParams(_CreateTaskParams):
-        """Parameters for creating a task in a TaskGroup."""
+        """Keyword arguments accepted by :meth:`TaskGroup.create_task`."""
 
         eager_start: bool | None
 else:
