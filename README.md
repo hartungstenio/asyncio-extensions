@@ -53,6 +53,26 @@ async with LimitedTaskGroup(3) as tg:
     tg.cancel()
 ```
 
+#### TerminateTaskGroup and force_terminate_task_group
+
+`TerminateTaskGroup` and `force_terminate_task_group` implement the [terminating a task group](https://docs.python.org/3/library/asyncio-task.html#terminating-a-task-group) pattern from the Python docs. Schedule `force_terminate_task_group()` as a task to stop the entire group early; catch `TerminateTaskGroup` with `except*` to suppress it.
+
+When using `asyncio_extensions.TaskGroup`, suppression is automatic — no `except*` block needed.
+
+```python
+import asyncio
+
+from asyncio_extensions import TerminateTaskGroup, force_terminate_task_group
+
+async def main() -> None:
+    try:
+        async with asyncio.TaskGroup() as tg:
+            task = tg.create_task(do_work())
+            tg.create_task(force_terminate_task_group())
+    except* TerminateTaskGroup:
+        pass
+```
+
 ### checkpoint
 
 The `checkpoint` function yields control to the event loop. It is a more elegant approach to do-nothing tasks, giving other tasks a chance to run.
@@ -142,6 +162,18 @@ def blocking_read(path: str) -> str:
 
 async def main():
     content = await blocking_read("data.txt")
+```
+
+### asyncify_iterable
+
+The `asyncify_iterable` function converts any sync or async iterable into an `AsyncIterable`. If the input is already async, it is returned unchanged. Otherwise it is wrapped in an async generator that yields each item and calls `checkpoint()` between items to avoid monopolising the event loop on large inputs.
+
+```python
+from asyncio_extensions import asyncify_iterable
+
+async def process(items):
+    async for item in asyncify_iterable(items):
+        await handle(item)
 ```
 
 ### iterate_queue
@@ -234,14 +266,83 @@ async with merge_iterables(fetch_page(1), fetch_page(2)) as stream:
         process(item)
 ```
 
-### iscoroutinefunction and markcoroutinefunction
+### ManagedStream
+
+`ManagedStream[T]` is the type alias for an async context manager that yields an `AsyncIterator[T]`. It is the return type of `safe_gen` and `merge_iterables`, and the accepted parameter type of `flatten_stream`. Use it to annotate your own functions that expose a context-managed async stream:
+
+```python
+from asyncio_extensions import ManagedStream
+
+def my_stream() -> ManagedStream[int]:
+    ...
+```
+
+### safe_gen
+
+The `safe_gen` decorator converts an async generator function into a context manager, enforcing correct handling of early exits. A plain async generator abandoned before exhaustion leaks resources and keeps running indefinitely — the caller has no way to know it needs to call `aclose()`. By returning a context manager instead, `safe_gen` makes cleanup syntactically mandatory: callers must use `async with`, which guarantees `aclose()` is called on exit regardless of how iteration ends. It also suppresses `GeneratorExit` raised inside an exception group, so it composes safely with `TaskGroup`.
+
+```python
+from asyncio_extensions import safe_gen
+
+@safe_gen
+async def paginate(url: str) -> AsyncGenerator[dict]:
+    while url:
+        response = await fetch(url)
+        for item in response["results"]:
+            yield item
+        url = response.get("next")
+
+async with paginate("https://api.example.com/items") as stream:
+    async for item in stream:
+        if should_stop(item):
+            break  # generator is closed automatically
+```
+
+### flatten_stream
+
+The `flatten_stream` async generator enters a `ManagedStream` context manager and yields its items directly, without requiring an explicit `async with` block. This is particularly useful when a plain `async for` loop is the only interface available — such as Django's `StreamingHttpResponse`.
+
+The recommended pattern is to keep the `async with` block until the last possible moment, and only apply `flatten_stream` at the interface boundary:
+
+```python
+from contextlib import asynccontextmanager
+from django.http import StreamingHttpResponse
+from asyncio_extensions import flatten_stream, merge_iterables
+
+async def export_view(request):
+    async def serialized(stream):
+        async for row in stream:
+            yield serialize(row)
+
+    @asynccontextmanager
+    async def response_body():
+        async with merge_iterables(fetch_orders(), fetch_invoices()) as stream:
+            yield serialized(stream)
+
+    return StreamingHttpResponse(flatten_stream(response_body()), content_type="text/csv")
+```
+
+For early-exit scenarios, wrap the result in `aclosing` to ensure proper cleanup:
+
+```python
+from contextlib import aclosing
+
+async with aclosing(flatten_stream(merge_iterables(source_a, source_b))) as stream:
+    async for item in stream:
+        if done(item):
+            break
+```
+
+### iscoroutinefunction, markcoroutinefunction, and is_awaitable
 
 The `iscoroutinefunction` helper checks whether a callable is already a coroutine function. It is re-exported from `inspect` on newer Python versions and from `asyncio` on older versions, depending on the runtime.
 
 The `markcoroutinefunction` helper marks a normal sync callable as a coroutine function. On Python 3.12+ this is `inspect.markcoroutinefunction`, but with the return type annotated so the function can be treated as a coroutine function in type-checked code.
 
+`is_awaitable` is a typed variant of `iscoroutinefunction` that returns a `TypeIs` guard, allowing type checkers to narrow the callable's return type to `Awaitable` in the `True` branch.
+
 ```python
-from asyncio_extensions import iscoroutinefunction, markcoroutinefunction
+from asyncio_extensions import iscoroutinefunction, is_awaitable, markcoroutinefunction
 
 async def main():
     def sync_task() -> int:
@@ -251,6 +352,11 @@ async def main():
 
     marked = markcoroutinefunction(sync_task)
     assert iscoroutinefunction(marked) is True
+
+async def call(fn: Callable[[], int] | Callable[[], Awaitable[int]]) -> int:
+    if is_awaitable(fn):
+        return await fn()  # type checker knows fn() returns Awaitable[int] here
+    return fn()
 ```
 
 ## Contributing

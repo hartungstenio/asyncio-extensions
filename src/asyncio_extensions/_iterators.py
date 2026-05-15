@@ -5,7 +5,7 @@ import sys
 from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator, Callable, Iterable
 from contextlib import AbstractAsyncContextManager, aclosing, asynccontextmanager
 from functools import wraps
-from typing import Any, ParamSpec, TypeVar
+from typing import Any, ParamSpec, TypeAlias, TypeVar
 
 from ._compat import QueueShutDown
 from ._sync import asyncify_iterable
@@ -13,7 +13,16 @@ from ._task_groups import TaskGroup
 
 T = TypeVar("T")
 P = ParamSpec("P")
+ManagedStream: TypeAlias = AbstractAsyncContextManager[AsyncIterator[T]]
+"""An async context manager that yields an :class:`~collections.abc.AsyncIterator`.
 
+This is the return type of :func:`safe_gen` and :func:`merge_iterables`, and the
+accepted parameter type of :func:`flatten_stream`.  Use it to annotate functions
+that return a context-managed async stream::
+
+    def my_stream() -> ManagedStream[int]:
+        ...
+"""
 
 if sys.version_info >= (3, 13):
     from warnings import deprecated
@@ -134,9 +143,7 @@ async def merge_iterables(
             tg.cancel()
 
 
-def safe_gen(
-    fn: Callable[P, AsyncGenerator[T, Any]],
-) -> Callable[P, AbstractAsyncContextManager[AsyncIterator[T]]]:
+def safe_gen(fn: Callable[P, AsyncGenerator[T, Any]]) -> Callable[P, ManagedStream[T]]:
     """Wrap an async generator function so it is always closed on exit.
 
     Async generators must be explicitly closed when iteration is abandoned early — otherwise
@@ -170,3 +177,38 @@ def safe_gen(
             pass
 
     return decorator
+
+
+async def flatten_stream(ctx: ManagedStream[T]) -> AsyncIterator[T]:
+    """Iterate a context-managed stream without an explicit ``async with`` block.
+
+    Enters *ctx*, iterates the resulting async iterator, and yields each item
+    directly.  This lets callers treat a :data:`ManagedStream` — the return
+    type of :func:`safe_gen` and :func:`merge_iterables` — as a plain async
+    iterator when context-manager syntax would be cumbersome.
+
+    ``GeneratorExit`` raised inside an exception group is suppressed so that
+    early cancellation by a :class:`~asyncio.TaskGroup` propagates cleanly.
+
+    Args:
+        ctx: An async context manager whose ``__aenter__`` returns an async
+            iterator (a :data:`ManagedStream`).
+
+    Yields:
+        Items from the stream provided by *ctx*.
+
+    Example::
+
+        async for item in flatten_stream(merge_iterables([1, 2], [3, 4])):
+            print(item)
+
+        async with aclosing(flatten_stream(merge_iterables([1, 2], [3, 4]))) as stream:
+            async for item in stream:
+                print(item)
+    """
+    try:
+        async with ctx as itr:
+            async for it in itr:
+                yield it
+    except* GeneratorExit:
+        pass
