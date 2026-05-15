@@ -8,6 +8,13 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+## [0.2.0] - 2026-05-15
+
+### Added
+
+- `flatten_stream` async generator to iterate a `ManagedStream` context manager without an explicit `async with` block.
+- `ManagedStream` type alias for an async context manager that yields an `AsyncIterator`.
+
 ## [0.1.0] - 2026-05-13
 
 ### Added

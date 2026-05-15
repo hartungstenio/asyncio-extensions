@@ -6,7 +6,7 @@ from itertools import count
 import pytest
 
 from asyncio_extensions import checkpoint
-from asyncio_extensions._iterators import STOP, fill_queue, iterate_queue, merge_iterables, safe_gen
+from asyncio_extensions._iterators import STOP, fill_queue, flatten_stream, iterate_queue, merge_iterables, safe_gen
 
 pytestmark = pytest.mark.asyncio
 
@@ -247,5 +247,63 @@ async def test_safe_gen_closes_on_break_with_internal_task_group() -> None:
     async with gen(5) as stream:
         async for _i in stream:
             break
+
+    assert closed
+
+
+# flatten_stream
+
+
+async def test_flatten_stream_yields_all_items() -> None:
+    results = [item async for item in flatten_stream(merge_iterables([1, 2, 3]))]
+
+    assert results == [1, 2, 3]
+
+
+async def test_flatten_stream_empty_stream_yields_nothing() -> None:
+    results = [item async for item in flatten_stream(merge_iterables([]))]
+
+    assert results == []
+
+
+async def test_flatten_stream_closes_context_on_early_exit() -> None:
+    initial_tasks = len(asyncio.all_tasks())
+
+    stream = flatten_stream(merge_iterables(range(100), range(100)))
+    async for _ in stream:
+        break
+    await stream.aclose()
+
+    assert len(asyncio.all_tasks()) == initial_tasks
+
+
+async def test_flatten_stream_works_with_safe_gen() -> None:
+    @safe_gen
+    async def gen() -> AsyncGenerator[int]:
+        for i in range(5):
+            yield i
+
+    results = [item async for item in flatten_stream(gen())]
+
+    assert results == [0, 1, 2, 3, 4]
+
+
+async def test_flatten_stream_safe_gen_closed_on_early_exit() -> None:
+    closed = False
+
+    @safe_gen
+    async def gen() -> AsyncGenerator[int]:
+        try:
+            for i in range(5):
+                yield i
+        except GeneratorExit:
+            nonlocal closed
+            closed = True
+            raise
+
+    stream = flatten_stream(gen())
+    async for _ in stream:
+        break
+    await stream.aclose()
 
     assert closed
