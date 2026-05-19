@@ -100,6 +100,22 @@ async def fill_queue(itr: AsyncIterable[T] | Iterable[T], queue: asyncio.Queue[T
         await queue.put(it)
 
 
+async def drain(itr: AsyncIterable[T] | Iterable[T]) -> None:
+    """Consume the remaining items from *itr*.
+
+    Accepts both sync and async iterables.
+
+    Args:
+        itr: The iterable (sync or async) to consume.
+
+    Example::
+
+        await drain(range(10))
+    """
+    async for _ in asyncify_iterable(itr):
+        pass
+
+
 @asynccontextmanager
 async def merge_iterables(
     *itrs: AsyncIterable[T] | Iterable[T],

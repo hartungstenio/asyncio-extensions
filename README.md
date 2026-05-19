@@ -240,6 +240,25 @@ async def source():
 await fill_queue(source(), queue)
 ```
 
+### drain
+
+The `drain` coroutine consumes and discards the remaining items from an async iterator or async iterable. This is useful when you want to stop processing early but must ensure the source is exhausted so producers can finish and resources can be released.
+
+Example — process only the first N items, then discard the rest so the producer can complete:
+
+```python
+from asyncio_extensions import drain
+
+async def iter_items():
+    ...  # yields items that need to process
+
+async for idx, item in enumerate(iter_items()):
+    if idx >= 5:
+        break
+    print(item)
+# ensure the remaining items are consumed and the producer can finish
+await drain(stream)
+```
 ### merge_iterables
 
 The `merge_iterables` async context manager merges multiple sync or async iterables into a single interleaved stream, feeding all sources into a shared queue concurrently.

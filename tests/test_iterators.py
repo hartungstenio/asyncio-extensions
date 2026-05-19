@@ -6,15 +6,24 @@ from itertools import count
 import pytest
 
 from asyncio_extensions import checkpoint
-from asyncio_extensions._iterators import STOP, fill_queue, flatten_stream, iterate_queue, merge_iterables, safe_gen
+from asyncio_extensions._iterators import (
+    STOP,
+    drain,
+    fill_queue,
+    flatten_stream,
+    iterate_queue,
+    merge_iterables,
+    safe_gen,
+)
 
 pytestmark = pytest.mark.asyncio
 
 
-def drain(queue: asyncio.Queue[int]) -> list[int]:
+def _drain_queue(queue: asyncio.Queue[int]) -> list[int]:
     items = []
     while not queue.empty():
         items.append(queue.get_nowait())
+        queue.task_done()
     return items
 
 
@@ -88,7 +97,7 @@ async def test_fill_queue_sync_iterable_fills_queue() -> None:
 
     await fill_queue([1, 2, 3], queue)
 
-    assert drain(queue) == [1, 2, 3]
+    assert _drain_queue(queue) == [1, 2, 3]
 
 
 async def test_fill_queue_async_iterable_fills_queue() -> None:
@@ -100,7 +109,7 @@ async def test_fill_queue_async_iterable_fills_queue() -> None:
 
     await fill_queue(source(), queue)
 
-    assert drain(queue) == [4, 5, 6]
+    assert _drain_queue(queue) == [4, 5, 6]
 
 
 async def test_fill_queue_empty_iterable_queue_remains_empty() -> None:
@@ -123,7 +132,32 @@ async def test_fill_queue_full_queue_blocks_until_space_available() -> None:
 
         queue.get_nowait()
 
-    assert drain(queue) == [1]
+    assert _drain_queue(queue) == [1]
+
+
+# drain
+
+
+async def test_drain_sync_iterator() -> None:
+    itr = iter([1, 2, 3])
+
+    await drain(itr)
+
+    with pytest.raises(StopIteration):
+        next(itr)
+
+
+async def test_drain_async_iterator() -> None:
+    async def gen() -> AsyncGenerator[int]:
+        for i in range(3):
+            yield i
+
+    itr = aiter(gen())
+
+    await drain(itr)
+
+    with pytest.raises(StopAsyncIteration):
+        await anext(itr)
 
 
 # merge_iterables
