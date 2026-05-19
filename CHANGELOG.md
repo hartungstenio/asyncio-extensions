@@ -8,6 +8,10 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+### Added
+
+- `drain` coroutine to consume and discard remaining items from an async iterator or async iterable.
+
 ## [0.2.0] - 2026-05-15
 
 ### Added
