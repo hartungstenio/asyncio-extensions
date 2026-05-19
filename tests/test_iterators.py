@@ -1,6 +1,7 @@
 import asyncio
 import sys
 from collections.abc import AsyncGenerator
+from contextlib import aclosing
 from itertools import count
 
 import pytest
@@ -13,6 +14,7 @@ from asyncio_extensions._iterators import (
     flatten_stream,
     iterate_queue,
     merge_iterables,
+    merge_streams,
     safe_gen,
 )
 
@@ -200,6 +202,58 @@ async def test_merge_iterables_early_exit_cancels_background_tasks() -> None:
     itrs = [count(), count(1)]
 
     async with merge_iterables(*itrs) as stream:
+        assert len(asyncio.all_tasks()) > initial_tasks
+
+        async for _ in stream:
+            break
+
+    assert len(asyncio.all_tasks()) == initial_tasks
+
+
+# merge_streams
+
+
+async def test_merge_streams_yields_all_items() -> None:
+    async def source(values: list[int]) -> AsyncGenerator[int]:
+        for v in values:
+            yield v
+
+    async with merge_streams(aclosing(source([10, 20])), aclosing(source([30, 40]))) as stream:
+        results = [item async for item in stream]
+
+    assert sorted(results) == [10, 20, 30, 40]
+
+
+async def test_merge_streams_single_source_yields_all_items() -> None:
+    async def source(values: list[int]) -> AsyncGenerator[int]:
+        for v in values:
+            yield v
+
+    async with merge_streams(aclosing(source([1, 2, 3]))) as stream:
+        results = [item async for item in stream]
+
+    assert results == [1, 2, 3]
+
+
+async def test_merge_streams_empty_sources_yields_nothing() -> None:
+    async def source() -> AsyncGenerator[int]:
+        if False:
+            yield
+
+    async with merge_streams(aclosing(source())) as stream:
+        results = [item async for item in stream]
+
+    assert results == []
+
+
+async def test_merge_streams_early_exit_cancels_background_tasks() -> None:
+    initial_tasks = len(asyncio.all_tasks())
+
+    async def source(values: list[int]) -> AsyncGenerator[int]:
+        for v in values:
+            yield v
+
+    async with merge_streams(aclosing(source([10, 20])), aclosing(source([30, 40]))) as stream:
         assert len(asyncio.all_tasks()) > initial_tasks
 
         async for _ in stream:

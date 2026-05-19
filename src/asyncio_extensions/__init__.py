@@ -9,6 +9,7 @@ from ._iterators import fill_queue as fill_queue
 from ._iterators import flatten_stream as flatten_stream
 from ._iterators import iterate_queue as iterate_queue
 from ._iterators import merge_iterables as merge_iterables
+from ._iterators import merge_streams as merge_streams
 from ._iterators import safe_gen as safe_gen
 from ._scheduling import checkpoint as checkpoint
 from ._scheduling import heartbeat as heartbeat

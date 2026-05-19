@@ -11,6 +11,7 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Added
 
 - `drain` coroutine to consume and discard remaining items from an async iterator or async iterable.
+- `merge_streams` managed-stream helper to merge multiple `ManagedStream` sources into a single interleaved stream.
 
 ## [0.2.0] - 2026-05-15
 

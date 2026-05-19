@@ -296,6 +296,29 @@ def my_stream() -> ManagedStream[int]:
     ...
 ```
 
+### merge_streams
+
+`merge_streams` is the managed-stream equivalent of `merge_iterables`. It accepts one or more `ManagedStream` objects (context managers that yield `AsyncIterator`s) and returns a single managed stream that interleaves items from all sources. Use it when each source requires context-managed setup/cleanup (for example, generators wrapped with `safe_gen` or `asynccontextmanager`-based streams).
+
+Example — merging two managed streams produced by `safe_gen`:
+
+```python
+from asyncio_extensions import merge_streams, safe_gen, checkpoint
+
+@safe_gen
+async def source(name: str):
+    for i in range(3):
+        yield f"{name}-{i}"
+        await checkpoint()
+
+async def main():
+    async with merge_streams(source("a"), source("b")) as stream:
+        async for item in stream:
+            print(item)
+```
+
+Each input managed stream is guaranteed to be closed when the merged context exits, ensuring proper cleanup of resources.
+
 ### safe_gen
 
 The `safe_gen` decorator converts an async generator function into a context manager, enforcing correct handling of early exits. A plain async generator abandoned before exhaustion leaks resources and keeps running indefinitely — the caller has no way to know it needs to call `aclose()`. By returning a context manager instead, `safe_gen` makes cleanup syntactically mandatory: callers must use `async with`, which guarantees `aclose()` is called on exit regardless of how iteration ends. It also suppresses `GeneratorExit` raised inside an exception group, so it composes safely with `TaskGroup`.
