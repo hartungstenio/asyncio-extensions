@@ -3,7 +3,7 @@
 import asyncio
 import sys
 from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator, Callable, Iterable
-from contextlib import AbstractAsyncContextManager, aclosing, asynccontextmanager
+from contextlib import AbstractAsyncContextManager, AsyncExitStack, aclosing, asynccontextmanager
 from functools import wraps
 from typing import Any, ParamSpec, TypeAlias, TypeVar
 
@@ -100,6 +100,22 @@ async def fill_queue(itr: AsyncIterable[T] | Iterable[T], queue: asyncio.Queue[T
         await queue.put(it)
 
 
+async def drain(itr: AsyncIterable[T] | Iterable[T]) -> None:
+    """Consume the remaining items from *itr*.
+
+    Accepts both sync and async iterables.
+
+    Args:
+        itr: The iterable (sync or async) to consume.
+
+    Example::
+
+        await drain(range(10))
+    """
+    async for _ in asyncify_iterable(itr):
+        pass
+
+
 @asynccontextmanager
 async def merge_iterables(
     *itrs: AsyncIterable[T] | Iterable[T],
@@ -141,6 +157,31 @@ async def merge_iterables(
             yield iterate_queue(queue)
         finally:
             tg.cancel()
+
+
+@asynccontextmanager
+async def merge_streams(*streams: ManagedStream[T]) -> AsyncIterator[AsyncGenerator[T]]:
+    """Merge multiple managed streams into a single async stream.
+
+    Similar to :func:`merge_iterables`, but work with managed streams.
+
+    Args:
+        *streams: Any number of managed streams to merge.
+
+    Yields:
+        An async generator producing items from all *itrs* interleaved.
+
+    Example::
+
+        async with merge_streams(source_a, source_b) as stream:
+            async for item in stream:
+                process(item)
+    """
+    async with AsyncExitStack() as exit_stack:
+        itrs = [await exit_stack.enter_async_context(stream) for stream in streams]
+        merged = await exit_stack.enter_async_context(merge_iterables(*itrs))
+
+        yield merged
 
 
 def safe_gen(fn: Callable[P, AsyncGenerator[T, Any]]) -> Callable[P, ManagedStream[T]]:

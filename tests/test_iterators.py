@@ -1,20 +1,31 @@
 import asyncio
 import sys
 from collections.abc import AsyncGenerator
+from contextlib import aclosing
 from itertools import count
 
 import pytest
 
 from asyncio_extensions import checkpoint
-from asyncio_extensions._iterators import STOP, fill_queue, flatten_stream, iterate_queue, merge_iterables, safe_gen
+from asyncio_extensions._iterators import (
+    STOP,
+    drain,
+    fill_queue,
+    flatten_stream,
+    iterate_queue,
+    merge_iterables,
+    merge_streams,
+    safe_gen,
+)
 
 pytestmark = pytest.mark.asyncio
 
 
-def drain(queue: asyncio.Queue[int]) -> list[int]:
+def _drain_queue(queue: asyncio.Queue[int]) -> list[int]:
     items = []
     while not queue.empty():
         items.append(queue.get_nowait())
+        queue.task_done()
     return items
 
 
@@ -88,7 +99,7 @@ async def test_fill_queue_sync_iterable_fills_queue() -> None:
 
     await fill_queue([1, 2, 3], queue)
 
-    assert drain(queue) == [1, 2, 3]
+    assert _drain_queue(queue) == [1, 2, 3]
 
 
 async def test_fill_queue_async_iterable_fills_queue() -> None:
@@ -100,7 +111,7 @@ async def test_fill_queue_async_iterable_fills_queue() -> None:
 
     await fill_queue(source(), queue)
 
-    assert drain(queue) == [4, 5, 6]
+    assert _drain_queue(queue) == [4, 5, 6]
 
 
 async def test_fill_queue_empty_iterable_queue_remains_empty() -> None:
@@ -123,7 +134,32 @@ async def test_fill_queue_full_queue_blocks_until_space_available() -> None:
 
         queue.get_nowait()
 
-    assert drain(queue) == [1]
+    assert _drain_queue(queue) == [1]
+
+
+# drain
+
+
+async def test_drain_sync_iterator() -> None:
+    itr = iter([1, 2, 3])
+
+    await drain(itr)
+
+    with pytest.raises(StopIteration):
+        next(itr)
+
+
+async def test_drain_async_iterator() -> None:
+    async def gen() -> AsyncGenerator[int]:
+        for i in range(3):
+            yield i
+
+    itr = aiter(gen())
+
+    await drain(itr)
+
+    with pytest.raises(StopAsyncIteration):
+        await anext(itr)
 
 
 # merge_iterables
@@ -166,6 +202,58 @@ async def test_merge_iterables_early_exit_cancels_background_tasks() -> None:
     itrs = [count(), count(1)]
 
     async with merge_iterables(*itrs) as stream:
+        assert len(asyncio.all_tasks()) > initial_tasks
+
+        async for _ in stream:
+            break
+
+    assert len(asyncio.all_tasks()) == initial_tasks
+
+
+# merge_streams
+
+
+async def test_merge_streams_yields_all_items() -> None:
+    async def source(values: list[int]) -> AsyncGenerator[int]:
+        for v in values:
+            yield v
+
+    async with merge_streams(aclosing(source([10, 20])), aclosing(source([30, 40]))) as stream:
+        results = [item async for item in stream]
+
+    assert sorted(results) == [10, 20, 30, 40]
+
+
+async def test_merge_streams_single_source_yields_all_items() -> None:
+    async def source(values: list[int]) -> AsyncGenerator[int]:
+        for v in values:
+            yield v
+
+    async with merge_streams(aclosing(source([1, 2, 3]))) as stream:
+        results = [item async for item in stream]
+
+    assert results == [1, 2, 3]
+
+
+async def test_merge_streams_empty_sources_yields_nothing() -> None:
+    async def source() -> AsyncGenerator[int]:
+        if False:
+            yield
+
+    async with merge_streams(aclosing(source())) as stream:
+        results = [item async for item in stream]
+
+    assert results == []
+
+
+async def test_merge_streams_early_exit_cancels_background_tasks() -> None:
+    initial_tasks = len(asyncio.all_tasks())
+
+    async def source(values: list[int]) -> AsyncGenerator[int]:
+        for v in values:
+            yield v
+
+    async with merge_streams(aclosing(source([10, 20])), aclosing(source([30, 40]))) as stream:
         assert len(asyncio.all_tasks()) > initial_tasks
 
         async for _ in stream:

@@ -240,6 +240,25 @@ async def source():
 await fill_queue(source(), queue)
 ```
 
+### drain
+
+The `drain` coroutine consumes and discards the remaining items from an async iterator or async iterable. This is useful when you want to stop processing early but must ensure the source is exhausted so producers can finish and resources can be released.
+
+Example — process only the first N items, then discard the rest so the producer can complete:
+
+```python
+from asyncio_extensions import drain
+
+async def iter_items():
+    ...  # yields items that need to process
+
+async for idx, item in enumerate(iter_items()):
+    if idx >= 5:
+        break
+    print(item)
+# ensure the remaining items are consumed and the producer can finish
+await drain(stream)
+```
 ### merge_iterables
 
 The `merge_iterables` async context manager merges multiple sync or async iterables into a single interleaved stream, feeding all sources into a shared queue concurrently.
@@ -276,6 +295,29 @@ from asyncio_extensions import ManagedStream
 def my_stream() -> ManagedStream[int]:
     ...
 ```
+
+### merge_streams
+
+`merge_streams` is the managed-stream equivalent of `merge_iterables`. It accepts one or more `ManagedStream` objects (context managers that yield `AsyncIterator`s) and returns a single managed stream that interleaves items from all sources. Use it when each source requires context-managed setup/cleanup (for example, generators wrapped with `safe_gen` or `asynccontextmanager`-based streams).
+
+Example — merging two managed streams produced by `safe_gen`:
+
+```python
+from asyncio_extensions import merge_streams, safe_gen, checkpoint
+
+@safe_gen
+async def source(name: str):
+    for i in range(3):
+        yield f"{name}-{i}"
+        await checkpoint()
+
+async def main():
+    async with merge_streams(source("a"), source("b")) as stream:
+        async for item in stream:
+            print(item)
+```
+
+Each input managed stream is guaranteed to be closed when the merged context exits, ensuring proper cleanup of resources.
 
 ### safe_gen
 
