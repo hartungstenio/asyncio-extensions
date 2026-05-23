@@ -40,6 +40,7 @@ dev = [
   "faker",
   "mypy",
   "pre-commit",
+  "pyrefly",
   "pytest",
   "pytest-asyncio",
   "pytest-cov",
@@ -94,6 +95,12 @@ run = "pytest{env:HATCH_TEST_ARGS:} {args}"
 run-cov = "coverage run -m pytest{env:HATCH_TEST_ARGS:} {args}"
 cov-combine = "coverage combine"
 cov-report = "coverage xml"
+
+[tool.mypy]
+strict = true
+
+[tool.pyrefly]
+preset = "strict"
 
 [tool.pytest]
 asyncio_default_fixture_loop_scope = "function"

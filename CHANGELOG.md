@@ -13,6 +13,11 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 - `drain` coroutine to consume and discard remaining items from an async iterator or async iterable.
 - `merge_streams` managed-stream helper to merge multiple `ManagedStream` sources into a single interleaved stream.
 
+### Changed
+
+- Type validation now includes Pyrefly checks for enhanced type safety.
+- Enabled mypy strict mode to enforce stricter type checking standards.
+
 ## [0.2.0] - 2026-05-15
 
 ### Added
