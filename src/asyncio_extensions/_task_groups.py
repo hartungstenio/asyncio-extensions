@@ -27,14 +27,15 @@ async def force_terminate_task_group() -> Never:
 class TaskGroup(asyncio.TaskGroup):
     """An :class:`asyncio.TaskGroup` extended with a :meth:`cancel` method."""
 
+    @override
     async def __aexit__(
         self,
-        exc_type: type[BaseException] | None,
-        exc_value: BaseException | None,
-        traceback: TracebackType | None,
+        et: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: TracebackType | None,
     ) -> None:
         try:
-            await super().__aexit__(exc_type, exc_value, traceback)
+            await super().__aexit__(et, exc, tb)
         except* TerminateTaskGroup:
             pass
 

@@ -32,8 +32,11 @@ jobs:
       - name: Run static analysis
         run: hatch fmt --check
 
-      - name: Run type checking
+      - name: Type checking with MyPy
         run: hatch run mypy src/asyncio_extensions
+
+      - name: Type checking with Pyrefly
+        run: hatch run pyrefly check src/asyncio_extensions
 
   tests:
     name: Run tests on ${{ matrix.python-version }}
