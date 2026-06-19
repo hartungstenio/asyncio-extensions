@@ -7,7 +7,7 @@ from contextlib import AbstractAsyncContextManager, AsyncExitStack, aclosing, as
 from functools import wraps
 from typing import Any, ParamSpec, TypeAlias, TypeVar
 
-from ._compat import QueueShutDown
+from ._compat import QueueShutDown, sentinel
 from ._sync import asyncify_iterable
 from ._task_groups import TaskGroup
 
@@ -25,30 +25,26 @@ that return a context-managed async stream::
 """
 
 if sys.version_info >= (3, 13):
-    from warnings import deprecated
+    STOP = sentinel("STOP")
+    """Sentinel that signals the end of an :func:`iterate_queue` stream.
 
-    @deprecated("Prefer using Queue.shutdown instead.")
-    class STOP:
-        """Sentinel that signals the end of an :func:`iterate_queue` stream.
+    Put this class in the queue to stop iteration::
 
-        Put this class in the queue to stop iteration::
+        await queue.put(STOP)
 
-            await queue.put(STOP)
-
-        Deprecated:
-            Prefer :meth:`asyncio.Queue.shutdown` on Python 3.13+.
-        """
+    Deprecated:
+        Prefer :meth:`asyncio.Queue.shutdown` on Python 3.13+.
+    """
 
 
 else:
+    STOP = sentinel("STOP")
+    """Sentinel that signals the end of an :func:`iterate_queue` stream.
 
-    class STOP:
-        """Sentinel that signals the end of an :func:`iterate_queue` stream.
+    Put this class in the queue to stop iteration::
 
-        Put this class in the queue to stop iteration::
-
-            await queue.put(STOP)
-        """
+        await queue.put(STOP)
+    """
 
 
 async def iterate_queue(queue: asyncio.Queue[T]) -> AsyncGenerator[T]:

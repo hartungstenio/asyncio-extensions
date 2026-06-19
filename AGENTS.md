@@ -12,7 +12,7 @@ All implementation lives under `src/asyncio_extensions/`. Every submodule is **p
 
 | Module | Theme |
 |---|---|
-| `_compat.py` | Version compatibility shims (Python 3.11–3.14). No new features here. |
+| `_compat.py` | Version compatibility shims (Python 3.11–3.15). No new features here. |
 | `_sync.py` | Bridging sync and async code. |
 | `_scheduling.py` | Event-loop control utilities. |
 | `_iterators.py` | Async iteration utilities. |
@@ -55,7 +55,7 @@ from asyncio_extensions import checkpoint  # helper from another module
 
 Maintain the same order as the source module: tests for each symbol should appear in the order the symbols are defined, and within a symbol's tests, individual cases should follow the order of branches and conditions in the implementation.
 
-The test suite runs against Python 3.11, 3.12, 3.13, and 3.14 in CI. When writing version-specific tests, use `@pytest.mark.skipif(sys.version_info < (3, X), ...)`.
+The test suite runs against Python 3.11, 3.12, 3.13, 3.14 and 3.15 in CI. When writing version-specific tests, use `@pytest.mark.skipif(sys.version_info < (3, X), ...)`.
 
 ## Compatibility
 
