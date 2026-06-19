@@ -45,6 +45,13 @@ if sys.version_info >= (3, 14):
 else:
     CreateTaskParams = _CreateTaskParams
 
+if sys.version_info >= (3, 15):
+    sentinel = sentinel  # noqa: F821, PLW0127
+else:
+    from typing_extensions import Sentinel
+
+    sentinel = Sentinel
+
 
 __all__ = [
     "CreateTaskParams",
@@ -53,4 +60,5 @@ __all__ = [
     "iscoroutinefunction",
     "markcoroutinefunction",
     "override",
+    "sentinel",
 ]
