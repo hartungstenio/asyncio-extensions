@@ -24,6 +24,7 @@ async def test_force_terminate_task_group() -> None:
             tg.create_task(force_terminate_task_group())
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 15), reason="Skipping testing built-in TaskGroup")
 class TestTaskGroup:
     async def test_runs_tasks(self) -> None:
         async with TaskGroup() as tg:

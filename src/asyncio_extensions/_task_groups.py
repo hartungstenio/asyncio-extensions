@@ -1,6 +1,7 @@
 """Extensions to :mod:`asyncio` task groups."""
 
 import asyncio
+import sys
 from collections.abc import Coroutine
 from types import TracebackType
 from typing import Any, Never, TypeVar, Unpack
@@ -24,24 +25,28 @@ async def force_terminate_task_group() -> Never:
     raise TerminateTaskGroup
 
 
-class TaskGroup(asyncio.TaskGroup):
-    """An :class:`asyncio.TaskGroup` extended with a :meth:`cancel` method."""
+if sys.version_info >= (3, 15):
+    from asyncio import TaskGroup
+else:
 
-    @override
-    async def __aexit__(
-        self,
-        et: type[BaseException] | None,
-        exc: BaseException | None,
-        tb: TracebackType | None,
-    ) -> None:
-        try:
-            await super().__aexit__(et, exc, tb)
-        except* TerminateTaskGroup:
-            pass
+    class TaskGroup(asyncio.TaskGroup):
+        """An :class:`asyncio.TaskGroup` extended with a :meth:`cancel` method."""
 
-    def cancel(self) -> None:
-        """Schedule cancellation of all remaining tasks in the group."""
-        self.create_task(force_terminate_task_group())
+        @override
+        async def __aexit__(
+            self,
+            et: type[BaseException] | None,
+            exc: BaseException | None,
+            tb: TracebackType | None,
+        ) -> None:
+            try:
+                await super().__aexit__(et, exc, tb)
+            except* TerminateTaskGroup:
+                pass
+
+        def cancel(self) -> None:
+            """Schedule cancellation of all remaining tasks in the group."""
+            self.create_task(force_terminate_task_group())
 
 
 class LimitedTaskGroup(TaskGroup):
