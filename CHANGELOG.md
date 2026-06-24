@@ -15,9 +15,10 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Changed
 
-- `STOP` is now a proper sentinel instance (via `typing_extensions.Sentinel` on Python < 3.15) instead of a class used as a sentinel. Behaviour is unchanged; only the type changes.
 - Type validation now includes Pyrefly checks for enhanced type safety.
 - Enabled mypy strict mode to enforce stricter type checking standards.
+- `STOP` is now a proper sentinel instance (via `typing_extensions.Sentinel` on Python < 3.15) instead of a class used as a sentinel. Behaviour is unchanged; only the type changes.
+- Use built-in TaskGroup on Python 3.15+
 
 ## [0.2.0] - 2026-05-15
 
