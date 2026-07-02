@@ -46,12 +46,11 @@ else:
     CreateTaskParams = _CreateTaskParams
 
 if sys.version_info >= (3, 15):
-    sentinel = sentinel  # noqa: F821, PLW0127
+    import builtins
+
+    sentinel = builtins.sentinel
 else:
-    from typing_extensions import Sentinel
-
-    sentinel = Sentinel
-
+    from typing_extensions import sentinel  # type: ignore[attr-defined]
 
 __all__ = [
     "CreateTaskParams",
