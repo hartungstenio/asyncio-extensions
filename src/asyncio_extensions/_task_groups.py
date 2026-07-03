@@ -4,7 +4,7 @@ import asyncio
 import sys
 from collections.abc import Coroutine
 from types import TracebackType
-from typing import Any, Never, TypeVar, Unpack
+from typing import Never, TypeVar, Unpack
 
 from ._compat import CreateTaskParams, override
 
@@ -60,14 +60,14 @@ class LimitedTaskGroup(TaskGroup):
         super().__init__()
         self._semaphore = asyncio.Semaphore(max_concurrent)
 
-    async def _task_wrapper(self, coro: Coroutine[Any, Any, T]) -> T:
+    async def _task_wrapper(self, coro: Coroutine[None, None, T]) -> T:
         async with self._semaphore:
             return await coro
 
     @override
     def create_task(
         self,
-        coro: Coroutine[Any, Any, T],
+        coro: Coroutine[None, None, T],
         **kwargs: Unpack[CreateTaskParams],
     ) -> asyncio.Task[T]:
         """Schedule *coro* as a task, subject to the concurrency limit.

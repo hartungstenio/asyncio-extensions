@@ -99,9 +99,11 @@ cov-report = "coverage xml"
 
 [tool.mypy]
 strict = true
+enable_error_code = ["deprecated"]
 
 [tool.pyrefly]
 preset = "strict"
+min-severity = "ignore"
 
 [tool.pytest]
 asyncio_default_fixture_loop_scope = "function"

@@ -53,7 +53,7 @@ def asyncify(func: Callable[_P, _R] | Callable[_P, Awaitable[_R]], /) -> Callabl
     return wrapper
 
 
-def markcoroutinefunction(f: Callable[_P, _R]) -> Callable[_P, Coroutine[Any, Any, _R]]:
+def markcoroutinefunction(f: Callable[_P, _R]) -> Callable[_P, Coroutine[None, None, _R]]:
     """Mark *f* as a coroutine function without making it async.
 
     After marking, :func:`asyncio.iscoroutinefunction` returns ``True``
