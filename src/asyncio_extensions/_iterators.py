@@ -5,7 +5,7 @@ import sys
 from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator, Callable, Iterable
 from contextlib import AbstractAsyncContextManager, AsyncExitStack, aclosing, asynccontextmanager
 from functools import wraps
-from typing import Any, ParamSpec, TypeAlias, TypeVar
+from typing import ParamSpec, TypeAlias, TypeVar
 
 from ._compat import QueueShutDown, sentinel
 from ._sync import asyncify_iterable
@@ -115,7 +115,7 @@ async def drain(itr: AsyncIterable[T] | Iterable[T]) -> None:
 @asynccontextmanager
 async def merge_iterables(
     *itrs: AsyncIterable[T] | Iterable[T],
-) -> AsyncIterator[AsyncGenerator[T]]:
+) -> AsyncGenerator[AsyncGenerator[T]]:
     """Merge multiple iterables into a single async stream.
 
     Feeds all *itrs* into a shared queue concurrently and yields a single
@@ -156,7 +156,7 @@ async def merge_iterables(
 
 
 @asynccontextmanager
-async def merge_streams(*streams: ManagedStream[T]) -> AsyncIterator[AsyncGenerator[T]]:
+async def merge_streams(*streams: ManagedStream[T]) -> AsyncGenerator[AsyncGenerator[T]]:
     """Merge multiple managed streams into a single async stream.
 
     Similar to :func:`merge_iterables`, but work with managed streams.
@@ -180,7 +180,7 @@ async def merge_streams(*streams: ManagedStream[T]) -> AsyncIterator[AsyncGenera
         yield merged
 
 
-def safe_gen(fn: Callable[P, AsyncGenerator[T, Any]]) -> Callable[P, ManagedStream[T]]:
+def safe_gen(fn: Callable[P, AsyncGenerator[T]]) -> Callable[P, ManagedStream[T]]:
     """Wrap an async generator function so it is always closed on exit.
 
     Async generators must be explicitly closed when iteration is abandoned early — otherwise
@@ -206,7 +206,7 @@ def safe_gen(fn: Callable[P, AsyncGenerator[T, Any]]) -> Callable[P, ManagedStre
 
     @asynccontextmanager
     @wraps(fn)
-    async def decorator(*args: P.args, **kwargs: P.kwargs) -> AsyncIterator[AsyncGenerator[T]]:
+    async def decorator(*args: P.args, **kwargs: P.kwargs) -> AsyncGenerator[AsyncGenerator[T]]:
         try:
             async with aclosing(fn(*args, **kwargs)) as agen:
                 yield agen

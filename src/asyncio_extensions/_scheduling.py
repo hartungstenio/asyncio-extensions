@@ -2,7 +2,7 @@
 
 import asyncio
 from collections.abc import Awaitable, Callable, Generator
-from typing import Any, Never, ParamSpec, TypeVar
+from typing import Never, ParamSpec, TypeVar
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -11,7 +11,7 @@ P = ParamSpec("P")
 class _YieldToEventLoop:
     """Helper class to give control back to the event loop."""
 
-    def __await__(self) -> Generator[None, Any, None]:
+    def __await__(self) -> Generator[None]:
         """Yield control to the event loop."""
         yield
 
