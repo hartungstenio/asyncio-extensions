@@ -78,4 +78,5 @@ class LimitedTaskGroup(TaskGroup):
         Returns:
             The created :class:`asyncio.Task`.
         """
+        # pyrefly: ignore [open-unpacking]
         return super().create_task(self._task_wrapper(coro), **kwargs)

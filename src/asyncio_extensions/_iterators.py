@@ -96,20 +96,26 @@ async def fill_queue(itr: AsyncIterable[T] | Iterable[T], queue: asyncio.Queue[T
         await queue.put(it)
 
 
-async def drain(itr: AsyncIterable[T] | Iterable[T]) -> None:
-    """Consume the remaining items from *itr*.
+async def drain(itr: AsyncIterable[T] | Iterable[T]) -> int:
+    """Consume the remaining items from *itr* and return the count drained.
 
     Accepts both sync and async iterables.
 
     Args:
         itr: The iterable (sync or async) to consume.
 
+    Returns:
+        The number of items consumed.
+
     Example::
 
-        await drain(range(10))
+        count = await drain(range(10))
+        assert count == 10
     """
+    count = 0
     async for _ in asyncify_iterable(itr):
-        pass
+        count += 1
+    return count
 
 
 @asynccontextmanager
@@ -145,7 +151,7 @@ async def merge_iterables(
 
         async def join() -> None:
             await asyncio.wait(tasks)
-            await queue.put(STOP)
+            await queue.put(STOP)  # type: ignore[arg-type]
 
         tg.create_task(join())
 

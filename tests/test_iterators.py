@@ -141,10 +141,12 @@ async def test_fill_queue_full_queue_blocks_until_space_available() -> None:
 
 
 async def test_drain_sync_iterator() -> None:
-    itr = iter([1, 2, 3])
+    given = [1, 2, 3]
+    itr = iter(given)
 
-    await drain(itr)
+    count = await drain(itr)
 
+    assert count == len(given)
     with pytest.raises(StopIteration):
         next(itr)
 
@@ -156,10 +158,17 @@ async def test_drain_async_iterator() -> None:
 
     itr = aiter(gen())
 
-    await drain(itr)
+    count = await drain(itr)
 
+    assert count == 3  # noqa: PLR2004
     with pytest.raises(StopAsyncIteration):
         await anext(itr)
+
+
+async def test_drain_empty_iterator_returns_zero() -> None:
+    count = await drain(iter([]))
+
+    assert count == 0
 
 
 # merge_iterables

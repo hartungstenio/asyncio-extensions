@@ -242,7 +242,7 @@ await fill_queue(source(), queue)
 
 ### drain
 
-The `drain` coroutine consumes and discards the remaining items from an async iterator or async iterable. This is useful when you want to stop processing early but must ensure the source is exhausted so producers can finish and resources can be released.
+The `drain` coroutine consumes and discards the remaining items from an async iterator or async iterable, returning the number of items consumed. This is useful when you want to stop processing early but must ensure the source is exhausted so producers can finish and resources can be released.
 
 Example — process only the first N items, then discard the rest so the producer can complete:
 
@@ -257,7 +257,8 @@ async for idx, item in enumerate(iter_items()):
         break
     print(item)
 # ensure the remaining items are consumed and the producer can finish
-await drain(stream)
+discarded = await drain(stream)
+print(f"discarded {discarded} items")
 ```
 ### merge_iterables
 

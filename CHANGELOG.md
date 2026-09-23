@@ -8,6 +8,14 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+## [0.3.1] - 2026-09-23
+
+### Changed
+
+- `drain` now returns the number of items consumed as an `int` instead of `None`.
+
+## [0.3.0] - 2026-07-03
+
 ### Added
 
 - `drain` coroutine to consume and discard remaining items from an async iterator or async iterable.
@@ -18,7 +26,7 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 - Type validation now includes Pyrefly checks for enhanced type safety.
 - Enabled mypy strict mode to enforce stricter type checking standards.
 - `STOP` is now a proper sentinel instance (via `typing_extensions.sentinel` on Python < 3.15) instead of a class used as a sentinel. Behaviour is unchanged; only the type changes.
-- Use built-in TaskGroup on Python 3.15+
+- Use built-in `TaskGroup` on Python 3.15+.
 
 ## [0.2.0] - 2026-05-15
 
@@ -45,22 +53,15 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Added
 
-- Expose `iscoroutinefunction` and `markcoroutinefunction` functions.
-- `iterate_queue` async generator to consume an `asyncio.Queue` as an `async for` loop, stopping automatically when the queue is shut down.
-- Expose `iscoroutinefunction` and `markcoroutinefunction` functions.
 - `iterate_queue` async generator to consume an `asyncio.Queue` as an `async for` loop, stopping automatically when the queue is shut down or when the `STOP` sentinel is dequeued.
 - `fill_queue` coroutine to fill an `asyncio.Queue` from any sync or async iterable.
 - `merge_iterables` async context manager to merge multiple sync or async iterables into a single interleaved stream.
 - `STOP` sentinel object used to signal the end of an `iterate_queue` stream.
+- Expose `iscoroutinefunction` and `markcoroutinefunction` functions.
 
 ### Changed
 
 - Rename `noop` to `identity` so the utility clearly expresses returning the passed value after yielding once to the event loop.
-
-
-### Changed
-
-- Renamed `noop` to `identity` so the utility clearly expresses returning the passed value after yielding once to the event loop.
 
 ## [0.0.4] - 2026-03-18
 
@@ -75,13 +76,13 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 - This CHANGELOG file.
 - pre-commit config.
 - test coverage using Codecov
-- LimitedTaskGroup to execute tasks limiting concurrency
-- heartbeat function to run something at regular interval
+- `LimitedTaskGroup` to execute tasks limiting concurrency.
+- `heartbeat` function to run something at regular interval.
 
 ### Changed
 
 - Package building and publishing are run in separate jobs to avoid credential sharing.
-- Improved README
+- Improved README.
 
 ## [0.0.2] - 2025-12-23
 
@@ -97,7 +98,10 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 - `checkpoint` function to yield control to the event loop.
 - `sleep_forever` function.
 
-[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.1.0...HEAD
+[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.1...HEAD
+[0.3.1]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.0...0.3.1
+[0.3.0]: https://github.com/hartungstenio/asyncio-extensions/compare/0.2.0...0.3.0
+[0.2.0]: https://github.com/hartungstenio/asyncio-extensions/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.5...0.1.0
 [0.0.5]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.4...0.0.5
 [0.0.4]: https://github.com/hartungstenio/asyncio-extensions/compare/0.0.3...0.0.4
