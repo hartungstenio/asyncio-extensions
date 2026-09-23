@@ -50,7 +50,7 @@ if sys.version_info >= (3, 15):
 
     sentinel = builtins.sentinel
 else:
-    from typing_extensions import sentinel  # type: ignore[attr-defined]
+    from typing_extensions import sentinel
 
 __all__ = [
     "CreateTaskParams",
