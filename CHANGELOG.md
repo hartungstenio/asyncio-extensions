@@ -8,6 +8,12 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+## [0.3.2] - 2026-09-24
+
+### Fixed
+
+- `merge_iterables` no longer raises `ValueError` when called with no arguments.
+
 ## [0.3.1] - 2026-09-23
 
 ### Changed
@@ -98,7 +104,8 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 - `checkpoint` function to yield control to the event loop.
 - `sleep_forever` function.
 
-[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.1...HEAD
+[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.2...HEAD
+[0.3.2]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.1...0.3.2
 [0.3.1]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/hartungstenio/asyncio-extensions/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/hartungstenio/asyncio-extensions/compare/0.1.0...0.2.0

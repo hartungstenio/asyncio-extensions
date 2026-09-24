@@ -206,6 +206,13 @@ async def test_merge_iterables_empty_sources_yields_nothing() -> None:
     assert results == []
 
 
+async def test_merge_iterables_no_sources_yields_nothing() -> None:
+    async with merge_iterables() as stream:
+        results = [item async for item in stream]
+
+    assert results == []
+
+
 async def test_merge_iterables_early_exit_cancels_background_tasks() -> None:
     initial_tasks = len(asyncio.all_tasks())
     itrs = [count(), count(1)]

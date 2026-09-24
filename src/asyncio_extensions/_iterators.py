@@ -150,7 +150,8 @@ async def merge_iterables(
         tasks = [tg.create_task(fill_queue(itr, queue)) for itr in itrs]
 
         async def join() -> None:
-            await asyncio.wait(tasks)
+            if tasks:
+                await asyncio.wait(tasks)
             await queue.put(STOP)  # type: ignore[arg-type]
 
         tg.create_task(join())
