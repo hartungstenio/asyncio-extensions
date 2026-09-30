@@ -4,7 +4,7 @@ import asyncio
 import sys
 from collections.abc import Coroutine
 from types import TracebackType
-from typing import Never, TypeVar, Unpack
+from typing import Any, Never, TypeVar, Unpack
 
 from ._compat import CreateTaskParams, override
 
@@ -67,7 +67,7 @@ class LimitedTaskGroup(TaskGroup):
     @override
     def create_task(
         self,
-        coro: Coroutine[None, None, T],
+        coro: Coroutine[Any, Any, T],
         **kwargs: Unpack[CreateTaskParams],
     ) -> asyncio.Task[T]:
         """Schedule *coro* as a task, subject to the concurrency limit.
@@ -78,5 +78,4 @@ class LimitedTaskGroup(TaskGroup):
         Returns:
             The created :class:`asyncio.Task`.
         """
-        # pyrefly: ignore [open-unpacking]
         return super().create_task(self._task_wrapper(coro), **kwargs)
