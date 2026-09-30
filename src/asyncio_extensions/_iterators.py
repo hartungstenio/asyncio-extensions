@@ -2,27 +2,18 @@
 
 import asyncio
 import sys
-from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator, Callable, Iterable
-from contextlib import AbstractAsyncContextManager, AsyncExitStack, aclosing, asynccontextmanager
+from collections.abc import AsyncGenerator, AsyncIterator, Awaitable, Callable
+from contextlib import AsyncExitStack, aclosing, asynccontextmanager
 from functools import wraps
-from typing import ParamSpec, TypeAlias, TypeVar
+from typing import Any, ParamSpec, TypeVar
 
 from ._compat import QueueShutDown, sentinel
 from ._sync import asyncify_iterable
 from ._task_groups import TaskGroup
+from ._types import AnyIterable, ManagedStream
 
 T = TypeVar("T")
 P = ParamSpec("P")
-ManagedStream: TypeAlias = AbstractAsyncContextManager[AsyncIterator[T]]
-"""An async context manager that yields an :class:`~collections.abc.AsyncIterator`.
-
-This is the return type of :func:`safe_gen` and :func:`merge_iterables`, and the
-accepted parameter type of :func:`flatten_stream`.  Use it to annotate functions
-that return a context-managed async stream::
-
-    def my_stream() -> ManagedStream[int]:
-        ...
-"""
 
 if sys.version_info >= (3, 13):
     STOP = sentinel("STOP")
@@ -78,7 +69,7 @@ async def iterate_queue(queue: asyncio.Queue[T]) -> AsyncGenerator[T]:
             queue.task_done()
 
 
-async def fill_queue(itr: AsyncIterable[T] | Iterable[T], queue: asyncio.Queue[T]) -> None:
+async def fill_queue(itr: AnyIterable[T], queue: asyncio.Queue[T]) -> None:
     """Fill *queue* with all items from *itr*.
 
     Accepts both sync and async iterables and puts each item into *queue*,
@@ -96,7 +87,7 @@ async def fill_queue(itr: AsyncIterable[T] | Iterable[T], queue: asyncio.Queue[T
         await queue.put(it)
 
 
-async def drain(itr: AsyncIterable[T] | Iterable[T]) -> int:
+async def drain(itr: AnyIterable[T]) -> int:
     """Consume the remaining items from *itr* and return the count drained.
 
     Accepts both sync and async iterables.
@@ -119,9 +110,7 @@ async def drain(itr: AsyncIterable[T] | Iterable[T]) -> int:
 
 
 @asynccontextmanager
-async def merge_iterables(
-    *itrs: AsyncIterable[T] | Iterable[T],
-) -> AsyncGenerator[AsyncGenerator[T]]:
+async def merge_iterables(*itrs: AnyIterable[T]) -> AsyncGenerator[AsyncGenerator[T]]:
     """Merge multiple iterables into a single async stream.
 
     Feeds all *itrs* into a shared queue concurrently and yields a single
@@ -203,6 +192,7 @@ def safe_gen(fn: Callable[P, AsyncGenerator[T]]) -> Callable[P, ManagedStream[T]
                 await asyncio.sleep(10)
                 yield i
 
+
         async with iterate_slowly(5) as stream:
             async for item in stream:
                 print(item)
@@ -256,3 +246,50 @@ async def flatten_stream(ctx: ManagedStream[T]) -> AsyncIterator[T]:
                 yield it
     except* GeneratorExit:
         pass
+
+
+async def for_each_concurrent(
+    source: AnyIterable[T],
+    callback: Callable[[T], Awaitable[Any]],
+    concurrency: int,
+) -> None:
+    """Apply *callback* to each item in *source* with bounded concurrency.
+
+    Consumes *source* and calls ``await callback(item)`` for each item,
+    keeping at most *concurrency* calls running at the same time. Items are
+    processed in the order they arrive from *source*, but callbacks may
+    complete out of order.
+
+    Args:
+        source: The source iterable (sync or async) to consume.
+        callback: An async callable invoked once per item.
+        concurrency: Maximum number of concurrent callback invocations.
+            Must be greater than 0.
+
+    Raises:
+        ValueError: If *concurrency* is not greater than 0.
+
+    Example::
+
+        async def fetch(url: str) -> None: ...
+
+
+        await for_each_concurrent(urls, fetch, concurrency=10)
+    """
+    if concurrency <= 0:
+        msg = f"concurrency must be greater than 0, got {concurrency!r}"
+        raise ValueError(msg)
+
+    queue: asyncio.Queue[T] = asyncio.Queue(concurrency)
+
+    async def worker() -> None:
+        async for item in iterate_queue(queue):
+            await callback(item)
+
+    async with TaskGroup() as tg:
+        for _ in range(concurrency):
+            tg.create_task(worker())
+
+        await fill_queue(source, queue)
+        await queue.join()
+        tg.cancel()
