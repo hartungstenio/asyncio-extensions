@@ -8,6 +8,10 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+### Added
+
+- `for_each_concurrent` coroutine to apply an async callback to each item in a sync or async iterable with bounded concurrency.
+
 ## [0.3.2] - 2026-09-24
 
 ### Fixed

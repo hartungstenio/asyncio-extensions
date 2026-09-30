@@ -3,10 +3,10 @@
 from ._compat import CreateTaskParams as CreateTaskParams
 from ._compat import iscoroutinefunction as iscoroutinefunction
 from ._iterators import STOP as STOP
-from ._iterators import ManagedStream as ManagedStream
 from ._iterators import drain as drain
 from ._iterators import fill_queue as fill_queue
 from ._iterators import flatten_stream as flatten_stream
+from ._iterators import for_each_concurrent as for_each_concurrent
 from ._iterators import iterate_queue as iterate_queue
 from ._iterators import merge_iterables as merge_iterables
 from ._iterators import merge_streams as merge_streams
@@ -23,3 +23,4 @@ from ._task_groups import LimitedTaskGroup as LimitedTaskGroup
 from ._task_groups import TaskGroup as TaskGroup
 from ._task_groups import TerminateTaskGroup as TerminateTaskGroup
 from ._task_groups import force_terminate_task_group as force_terminate_task_group
+from ._types import ManagedStream as ManagedStream

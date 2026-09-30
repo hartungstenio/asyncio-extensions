@@ -376,6 +376,20 @@ async with aclosing(flatten_stream(merge_iterables(source_a, source_b))) as stre
             break
 ```
 
+### for_each_concurrent
+
+The `for_each_concurrent` coroutine applies an async callback to each item in a sync or async iterable, keeping at most `concurrency` calls running at the same time. Items are consumed in order, but callbacks may complete out of order.
+
+```python
+from asyncio_extensions import for_each_concurrent
+
+async def fetch(url: str) -> None:
+    response = await client.get(url)
+    await save(response)
+
+await for_each_concurrent(urls, fetch, concurrency=10)
+```
+
 ### iscoroutinefunction, markcoroutinefunction, and is_awaitable
 
 The `iscoroutinefunction` helper checks whether a callable is already a coroutine function. It is re-exported from `inspect` on newer Python versions and from `asyncio` on older versions, depending on the runtime.

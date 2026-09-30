@@ -12,11 +12,14 @@ from asyncio_extensions._iterators import (
     drain,
     fill_queue,
     flatten_stream,
+    for_each_concurrent,
     iterate_queue,
     merge_iterables,
     merge_streams,
     safe_gen,
 )
+
+from . import noop
 
 pytestmark = pytest.mark.asyncio
 
@@ -411,3 +414,81 @@ async def test_flatten_stream_safe_gen_closed_on_early_exit() -> None:
     await stream.aclose()
 
     assert closed
+
+
+# for_each_concurrent
+
+
+async def test_for_each_concurrent_zero_concurrency_raises() -> None:
+    with pytest.raises(ValueError, match="concurrency"):
+        await for_each_concurrent([], noop, 0)
+
+
+async def test_for_each_concurrent_negative_concurrency_raises() -> None:
+    with pytest.raises(ValueError, match="concurrency"):
+        await for_each_concurrent([], noop, -1)
+
+
+async def test_for_each_concurrent_sync_iterable_calls_callback_for_each_item() -> None:
+    results: list[int] = []
+
+    async def callback(item: int) -> None:
+        results.append(item)
+
+    await for_each_concurrent([1, 2, 3], callback, concurrency=2)
+
+    assert sorted(results) == [1, 2, 3]
+
+
+async def test_for_each_concurrent_async_iterable_calls_callback_for_each_item() -> None:
+    async def source() -> AsyncGenerator[int]:
+        for v in [1, 2, 3]:
+            yield v
+
+    results: list[int] = []
+
+    async def callback(item: int) -> None:
+        results.append(item)
+
+    await for_each_concurrent(source(), callback, concurrency=2)
+
+    assert sorted(results) == [1, 2, 3]
+
+
+async def test_for_each_concurrent_empty_source_completes_without_calling_callback() -> None:
+    called = False
+
+    async def callback(_: int) -> None:
+        nonlocal called
+        called = True
+
+    await for_each_concurrent([], callback, concurrency=2)
+
+    assert not called
+
+
+async def test_for_each_concurrent_respects_concurrency_limit() -> None:
+    active = 0
+    max_active = 0
+
+    async def callback(_: int) -> None:
+        nonlocal active, max_active
+        active += 1
+        max_active = max(max_active, active)
+        await checkpoint()
+        active -= 1
+
+    await for_each_concurrent(range(10), callback, concurrency=3)
+
+    assert max_active <= 3  # noqa: PLR2004
+
+
+async def test_for_each_concurrent_concurrency_one_processes_serially() -> None:
+    order: list[int] = []
+
+    async def callback(item: int) -> None:
+        order.append(item)
+
+    await for_each_concurrent([1, 2, 3], callback, concurrency=1)
+
+    assert order == [1, 2, 3]

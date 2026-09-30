@@ -1,2 +1,2 @@
-async def noop() -> None:
+async def noop(*_: object) -> None:
     """Do nothing."""
