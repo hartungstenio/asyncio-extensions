@@ -27,16 +27,17 @@ jobs:
           python-version: "3.13"
 
       - name: Setup Hatch
-        run: pipx  install --preinstall "virtualenv<21" hatch
+        run: pipx  install hatch
 
       - name: Run static analysis
-        run: hatch fmt --check
+        run: hatch check code
 
-      - name: Type checking with MyPy
-        run: hatch run mypy src/asyncio_extensions
+      - name: Verify formatting
+        run: hatch check fmt
 
-      - name: Type checking with Pyrefly
-        run: hatch run pyrefly check src/asyncio_extensions
+
+      - name: Run type checks
+        run: hatch check types
 
   tests:
     name: Run tests on ${{ matrix.python-version }}

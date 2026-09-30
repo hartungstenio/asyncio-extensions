@@ -8,6 +8,8 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+## [0.4.0] - 2026-09-30
+
 ### Added
 
 - `for_each_concurrent` coroutine to apply an async callback to each item in a sync or async iterable with bounded concurrency.
@@ -108,7 +110,8 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 - `checkpoint` function to yield control to the event loop.
 - `sleep_forever` function.
 
-[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.2...HEAD
+[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.4.0...HEAD
+[0.4.0]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.2...0.4.0
 [0.3.2]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.1...0.3.2
 [0.3.1]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/hartungstenio/asyncio-extensions/compare/0.2.0...0.3.0

@@ -2,7 +2,7 @@
 
 import asyncio
 import sys
-from collections.abc import AsyncGenerator, AsyncIterator, Awaitable, Callable
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import AsyncExitStack, aclosing, asynccontextmanager
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar
@@ -213,7 +213,7 @@ def safe_gen(fn: Callable[P, AsyncGenerator[T]]) -> Callable[P, ManagedStream[T]
     return decorator
 
 
-async def flatten_stream(ctx: ManagedStream[T]) -> AsyncIterator[T]:
+async def flatten_stream(ctx: ManagedStream[T]) -> AsyncGenerator[T]:
     """Iterate a context-managed stream without an explicit ``async with`` block.
 
     Enters *ctx*, iterates the resulting async iterator, and yields each item

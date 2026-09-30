@@ -1,16 +1,21 @@
 import sys
-from collections.abc import Callable
 from contextvars import Context
-from typing import ParamSpec, TypedDict, TypeVar
+from typing import ParamSpec, TypeVar
 
 _P = ParamSpec("_P")
 _R = TypeVar("_R")
+
+if sys.version_info >= (3, 15):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 if sys.version_info >= (3, 12):
     from inspect import iscoroutinefunction, markcoroutinefunction
     from typing import override
 else:
     from asyncio import coroutines, iscoroutinefunction
+    from collections.abc import Callable
 
     from typing_extensions import override
 
@@ -29,7 +34,7 @@ else:
         pass
 
 
-class _CreateTaskParams(TypedDict, total=False):
+class _CreateTaskParams(TypedDict, total=False, closed=True):
     """Parameters for creating a task in a TaskGroup."""
 
     name: str | None

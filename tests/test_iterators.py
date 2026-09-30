@@ -3,6 +3,7 @@ import sys
 from collections.abc import AsyncGenerator
 from contextlib import aclosing
 from itertools import count
+from typing import Any
 
 import pytest
 
@@ -203,14 +204,15 @@ async def test_merge_iterables_single_source_yields_all_items() -> None:
 
 
 async def test_merge_iterables_empty_sources_yields_nothing() -> None:
-    async with merge_iterables([], []) as stream:
+    given: list[Any] = []
+    async with merge_iterables(given, []) as stream:
         results = [item async for item in stream]
 
     assert results == []
 
 
 async def test_merge_iterables_no_sources_yields_nothing() -> None:
-    async with merge_iterables() as stream:
+    async with merge_iterables() as stream:  # type: ignore[var-annotated]
         results = [item async for item in stream]
 
     assert results == []
@@ -368,7 +370,8 @@ async def test_flatten_stream_yields_all_items() -> None:
 
 
 async def test_flatten_stream_empty_stream_yields_nothing() -> None:
-    results = [item async for item in flatten_stream(merge_iterables([]))]
+    given: list[Any] = []
+    results = [item async for item in flatten_stream(merge_iterables(given))]
 
     assert results == []
 
