@@ -2,6 +2,7 @@ import asyncio
 import sys
 from collections.abc import AsyncGenerator
 from contextlib import aclosing
+from contextvars import ContextVar
 from itertools import count
 from typing import Any
 
@@ -495,3 +496,42 @@ async def test_for_each_concurrent_concurrency_one_processes_serially() -> None:
     await for_each_concurrent([1, 2, 3], callback, concurrency=1)
 
     assert order == [1, 2, 3]
+
+
+async def test_for_each_concurrent_runs_each_item_in_its_own_task() -> None:
+    tasks: list[asyncio.Task[Any] | None] = []
+
+    async def callback(_: int) -> None:
+        tasks.append(asyncio.current_task())
+
+    await for_each_concurrent([1, 2, 3], callback, concurrency=1)
+
+    assert len(set(tasks)) == 3  # noqa: PLR2004
+    assert asyncio.current_task() not in tasks
+
+
+async def test_for_each_concurrent_isolates_context_between_items() -> None:
+    var: ContextVar[int | None] = ContextVar("var", default=None)
+    seen: list[int | None] = []
+
+    async def callback(item: int) -> None:
+        seen.append(var.get())
+        var.set(item)
+
+    await for_each_concurrent([1, 2, 3], callback, concurrency=1)
+
+    assert seen == [None, None, None]
+    assert var.get() is None
+
+
+async def test_for_each_concurrent_callback_inherits_caller_context() -> None:
+    var: ContextVar[str] = ContextVar("var", default="unset")
+    seen: list[str] = []
+
+    async def callback(_: int) -> None:
+        seen.append(var.get())
+
+    var.set("caller")
+    await for_each_concurrent([1, 2], callback, concurrency=2)
+
+    assert seen == ["caller", "caller"]
