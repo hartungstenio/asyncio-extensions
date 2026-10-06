@@ -2,7 +2,7 @@
 
 import asyncio
 import sys
-from collections.abc import AsyncGenerator, Awaitable, Callable
+from collections.abc import AsyncGenerator, Callable, Coroutine
 from contextlib import AsyncExitStack, aclosing, asynccontextmanager
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar
@@ -250,7 +250,7 @@ async def flatten_stream(ctx: ManagedStream[T]) -> AsyncGenerator[T]:
 
 async def for_each_concurrent(
     source: AnyIterable[T],
-    callback: Callable[[T], Awaitable[Any]],
+    callback: Callable[[T], Coroutine[Any, Any, Any]],
     concurrency: int,
 ) -> None:
     """Apply *callback* to each item in *source* with bounded concurrency.
@@ -282,11 +282,12 @@ async def for_each_concurrent(
 
     queue: asyncio.Queue[T] = asyncio.Queue(concurrency)
 
-    async def worker() -> None:
-        async for item in iterate_queue(queue):
-            await callback(item)
-
     async with TaskGroup() as tg:
+
+        async def worker() -> None:
+            async for item in iterate_queue(queue):
+                await tg.create_task(callback(item))
+
         for _ in range(concurrency):
             tg.create_task(worker())
 
