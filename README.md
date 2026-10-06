@@ -64,6 +64,7 @@ import asyncio
 
 from asyncio_extensions import TerminateTaskGroup, force_terminate_task_group
 
+
 async def main() -> None:
     try:
         async with asyncio.TaskGroup() as tg:
@@ -80,6 +81,7 @@ The `checkpoint` function yields control to the event loop. It is a more elegant
 ```python
 from asyncio_extensions import checkpoint
 
+
 class DummyChannel:
     async def send_message(self, message):
         await checkpoint()
@@ -91,6 +93,7 @@ The `sleep_forever` function never returns. It simply keeps yielding control to 
 
 ```python
 from asyncio_extensions import sleep_forever
+
 
 class DummyChannel:
     async def receive_message(self):
@@ -104,8 +107,10 @@ The `heartbeat` function runs a given callable at a regular interval.
 ```python
 from asyncio_extensions import heartbeat
 
+
 async def ping():
     pass
+
 
 async with TaskGroup() as tg:
     tg.create_task(heartbeat(5, ping))
@@ -119,6 +124,7 @@ The `identity` function yields control back to the event loop once, and then ret
 
 ```python
 from asyncio_extensions import TaskGroup, identity
+
 
 async def get_product(product_id: int):
     cached_product = await product_cache.get(product_id)
@@ -142,9 +148,11 @@ The `asyncify` function ensures a callable can be awaited. If the callable is al
 ```python
 from asyncio_extensions import asyncify
 
+
 def blocking_read(path: str) -> str:
     with open(path) as f:
         return f.read()
+
 
 async def main():
     content = await asyncify(blocking_read)("data.txt")
@@ -155,10 +163,12 @@ It can also be used as a decorator:
 ```python
 from asyncio_extensions import asyncify
 
+
 @asyncify
 def blocking_read(path: str) -> str:
     with open(path) as f:
         return f.read()
+
 
 async def main():
     content = await blocking_read("data.txt")
@@ -170,6 +180,7 @@ The `asyncify_iterable` function converts any sync or async iterable into an `As
 
 ```python
 from asyncio_extensions import asyncify_iterable
+
 
 async def process(items):
     async for item in asyncify_iterable(items):
@@ -184,6 +195,7 @@ The `iterate_queue` async generator wraps an `asyncio.Queue` so it can be consum
 import asyncio
 
 from asyncio_extensions import iterate_queue
+
 
 async def process_items(queue: asyncio.Queue[str]) -> None:
     async for item in iterate_queue(queue):
@@ -204,10 +216,12 @@ On older Python versions, put the `STOP` sentinel in the queue when done:
 ```python
 from asyncio_extensions import iterate_queue, STOP
 
+
 async def producer(queue: asyncio.Queue[object]) -> None:
     for item in ["a", "b", "c"]:
         await queue.put(item)
     await queue.put(STOP)
+
 
 async def consumer(queue: asyncio.Queue[object]) -> None:
     async for item in iterate_queue(queue):
@@ -225,6 +239,7 @@ import asyncio
 
 from asyncio_extensions import fill_queue
 
+
 async def main() -> None:
     queue: asyncio.Queue[int] = asyncio.Queue()
     await fill_queue(range(10), queue)
@@ -236,6 +251,7 @@ It also works with async iterables:
 async def source():
     for item in fetch_from_api():
         yield item
+
 
 await fill_queue(source(), queue)
 ```
@@ -249,8 +265,9 @@ Example — process only the first N items, then discard the rest so the produce
 ```python
 from asyncio_extensions import drain
 
-async def iter_items():
-    ...  # yields items that need to process
+
+async def iter_items(): ...  # yields items that need to process
+
 
 async for idx, item in enumerate(iter_items()):
     if idx >= 5:
@@ -269,6 +286,7 @@ import asyncio
 
 from asyncio_extensions import merge_iterables
 
+
 async def main() -> None:
     async with merge_iterables([1, 2, 3], [4, 5, 6]) as stream:
         async for item in stream:
@@ -278,8 +296,8 @@ async def main() -> None:
 It also accepts async iterables, which can produce items in parallel:
 
 ```python
-async def fetch_page(page: int):
-    ...  # yields items from a remote page
+async def fetch_page(page: int): ...  # yields items from a remote page
+
 
 async with merge_iterables(fetch_page(1), fetch_page(2)) as stream:
     async for item in stream:
@@ -293,8 +311,8 @@ async with merge_iterables(fetch_page(1), fetch_page(2)) as stream:
 ```python
 from asyncio_extensions import ManagedStream
 
-def my_stream() -> ManagedStream[int]:
-    ...
+
+def my_stream() -> ManagedStream[int]: ...
 ```
 
 ### merge_streams
@@ -306,11 +324,13 @@ Example — merging two managed streams produced by `safe_gen`:
 ```python
 from asyncio_extensions import merge_streams, safe_gen, checkpoint
 
+
 @safe_gen
 async def source(name: str):
     for i in range(3):
         yield f"{name}-{i}"
         await checkpoint()
+
 
 async def main():
     async with merge_streams(source("a"), source("b")) as stream:
@@ -327,6 +347,7 @@ The `safe_gen` decorator converts an async generator function into a context man
 ```python
 from asyncio_extensions import safe_gen
 
+
 @safe_gen
 async def paginate(url: str) -> AsyncGenerator[dict]:
     while url:
@@ -334,6 +355,7 @@ async def paginate(url: str) -> AsyncGenerator[dict]:
         for item in response["results"]:
             yield item
         url = response.get("next")
+
 
 async with paginate("https://api.example.com/items") as stream:
     async for item in stream:
@@ -351,6 +373,7 @@ The recommended pattern is to keep the `async with` block until the last possibl
 from contextlib import asynccontextmanager
 from django.http import StreamingHttpResponse
 from asyncio_extensions import flatten_stream, merge_iterables
+
 
 async def export_view(request):
     async def serialized(stream):
@@ -383,9 +406,11 @@ The `for_each_concurrent` coroutine applies an async callback to each item in a 
 ```python
 from asyncio_extensions import for_each_concurrent
 
+
 async def fetch(url: str) -> None:
     response = await client.get(url)
     await save(response)
+
 
 await for_each_concurrent(urls, fetch, concurrency=10)
 ```
@@ -401,6 +426,7 @@ The `markcoroutinefunction` helper marks a normal sync callable as a coroutine f
 ```python
 from asyncio_extensions import iscoroutinefunction, is_awaitable, markcoroutinefunction
 
+
 async def main():
     def sync_task() -> int:
         return 42
@@ -409,6 +435,7 @@ async def main():
 
     marked = markcoroutinefunction(sync_task)
     assert iscoroutinefunction(marked) is True
+
 
 async def call(fn: Callable[[], int] | Callable[[], Awaitable[int]]) -> int:
     if is_awaitable(fn):
