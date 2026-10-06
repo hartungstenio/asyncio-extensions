@@ -8,6 +8,12 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+## [0.4.1] - 2026-10-06
+
+### Fixed
+
+- `for_each_concurrent` now runs each callback invocation in its own task, so every item gets an isolated `contextvars` context (inherited from the caller) instead of sharing the worker's context.
+
 ## [0.4.0] - 2026-09-30
 
 ### Added
@@ -110,7 +116,8 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 - `checkpoint` function to yield control to the event loop.
 - `sleep_forever` function.
 
-[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.4.0...HEAD
+[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/0.4.1...HEAD
+[0.4.1]: https://github.com/hartungstenio/asyncio-extensions/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.2...0.4.0
 [0.3.2]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.1...0.3.2
 [0.3.1]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.0...0.3.1
