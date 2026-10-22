@@ -10,6 +10,7 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Added
 
+- `__lazy_modules__` tuple listing all package submodules.
 - `shielded` coroutine to run a coroutine in a task that continues when its caller is cancelled.
 
 ## [0.4.0] - 2026-09-30

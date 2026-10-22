@@ -1,5 +1,14 @@
 """Utility functions and extensions for AsyncIO."""
 
+__lazy_modules__ = (
+    "_compat",
+    "_iterators",
+    "_scheduling",
+    "_sync",
+    "_task_groups",
+    "_types",
+)
+
 from ._compat import CreateTaskParams as CreateTaskParams
 from ._compat import iscoroutinefunction as iscoroutinefunction
 from ._iterators import STOP as STOP
