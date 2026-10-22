@@ -13,6 +13,7 @@ from ._iterators import merge_streams as merge_streams
 from ._iterators import safe_gen as safe_gen
 from ._scheduling import checkpoint as checkpoint
 from ._scheduling import heartbeat as heartbeat
+from ._scheduling import shielded as shielded
 from ._scheduling import sleep_forever as sleep_forever
 from ._sync import asyncify as asyncify
 from ._sync import asyncify_iterable as asyncify_iterable
