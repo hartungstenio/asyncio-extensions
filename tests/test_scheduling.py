@@ -5,7 +5,8 @@ from unittest import mock
 import pytest
 from faker import Faker
 
-from asyncio_extensions._scheduling import checkpoint, heartbeat, sleep_forever
+from asyncio_extensions import TaskGroup
+from asyncio_extensions._scheduling import checkpoint, heartbeat, shielded, sleep_forever
 
 from . import noop
 
@@ -47,3 +48,27 @@ async def test_heartbeat() -> None:
             await heartbeat(1, mock_fn, 1, 2, name="a")
 
     assert mock_fn.await_args_list == [mock.call(1, 2, name="a")] * 4
+
+
+async def test_shielded_returns_coroutine_result() -> None:
+    assert await shielded(asyncio.sleep(0, result="result")) == "result"
+
+
+async def test_shielded_task_continues_after_caller_cancellation() -> None:
+    started = asyncio.Event()
+    release = asyncio.Event()
+    completed = asyncio.Event()
+
+    async def work() -> None:
+        started.set()
+        await release.wait()
+        completed.set()
+
+    async with TaskGroup() as tg:
+        tg.create_task(shielded(work()))
+        await started.wait()
+        tg.cancel()
+
+    assert not completed.is_set()
+    release.set()
+    await completed.wait()
