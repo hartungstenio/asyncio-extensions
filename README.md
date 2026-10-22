@@ -118,6 +118,26 @@ async with TaskGroup() as tg:
     await some_long_running_process()
 ```
 
+### shielded
+
+The `shielded` function runs a coroutine in a separate task, protecting it from
+cancellation of the task awaiting it. Cancellation is still raised to the
+caller, while the protected coroutine continues running until it completes.
+
+```python
+from asyncio_extensions import shielded
+
+
+async def save_state() -> None:
+    await persist_state()
+
+
+try:
+    await do_work()
+finally:
+    await shielded(save_state())
+```
+
 ### identity
 
 The `identity` function yields control back to the event loop once, and then returns the value that was passed in. It is useful when you already have a cached result and want to create a task that behaves like any other asynchronous operation.
