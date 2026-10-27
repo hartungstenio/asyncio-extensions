@@ -31,14 +31,14 @@ hatch run pytest
 # Run tests across all supported versions
 hatch test
 
-# Lint and auto-fix
-hatch fmt
+# Lint
+hatch check code
 
-# Check lint without fixing
-hatch fmt --check
+# Check formatting
+hatch check fmt
 
 # Type checking
-hatch run mypy src/asyncio_extensions
+hatch check types
 ```
 
 All of the above must pass before committing.
@@ -63,7 +63,7 @@ The test suite runs against Python 3.11, 3.12, 3.13, 3.14 and 3.15 in CI. When w
 
 ## Code style
 
-- Linter: **ruff** with an extensive ruleset (see `pyproject.toml`). Run `hatch fmt` before committing.
+- Linter: **ruff** with an extensive ruleset (see `pyproject.toml`). Run `hatch check code` before committing.
 - Docstrings: **PEP 257** (enforced via `ruff --select D` with `convention = "pep257"`). Use imperative mood for the summary line. Document constructor arguments in the class docstring, not in `__init__`.
 - Type annotations are required on all public symbols. The package ships a `py.typed` marker.
 
