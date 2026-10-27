@@ -8,6 +8,10 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+### Changed
+
+- `heartbeat` now accepts synchronous callables as well as coroutine functions; synchronous callables run in a separate thread.
+
 ## [1.0.0] - 2026-10-22
 
 ### Added

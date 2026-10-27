@@ -102,7 +102,9 @@ class DummyChannel:
 
 ### heartbeat
 
-The `heartbeat` function runs a given callable at a regular interval.
+The `heartbeat` function runs a given callable at a regular interval. It accepts
+both asynchronous and synchronous callables; synchronous callables run in a
+separate thread.
 
 ```python
 from asyncio_extensions import heartbeat
@@ -112,8 +114,13 @@ async def ping():
     pass
 
 
+def update_metrics():
+    pass
+
+
 async with TaskGroup() as tg:
     tg.create_task(heartbeat(5, ping))
+    tg.create_task(heartbeat(5, update_metrics))
 
     await some_long_running_process()
 ```
