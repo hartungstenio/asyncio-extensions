@@ -1,8 +1,10 @@
 """Utility functions."""
 
 import asyncio
-from collections.abc import Awaitable, Callable, Coroutine, Generator
+from collections.abc import Coroutine, Generator
 from typing import Any, Never, ParamSpec, TypeVar
+
+from ._types import AnyCallable
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -35,21 +37,25 @@ async def sleep_forever() -> Never:
 
 async def heartbeat(
     interval: float,
-    fn: Callable[P, Awaitable[T]],
+    fn: AnyCallable[P, T],
     *args: P.args,
     **kwargs: P.kwargs,
 ) -> None:
     """Call *fn* repeatedly, waiting *interval* seconds between each call.
 
+    Synchronous callables run in a separate thread.
+
     Args:
         interval: Number of seconds to wait between calls.
-        fn: The async callable to invoke.
+        fn: The synchronous or asynchronous callable to invoke.
         *args: Positional arguments forwarded to *fn*.
         **kwargs: Keyword arguments forwarded to *fn*.
     """
+    from ._sync import asyncify  # noqa: PLC0415
+
     while True:
         await asyncio.sleep(interval)
-        await fn(*args, **kwargs)
+        await asyncify(fn)(*args, **kwargs)
 
 
 async def shielded(coro: Coroutine[Any, Any, T]) -> T:

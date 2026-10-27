@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterable, AsyncIterator, Iterable
+from collections.abc import AsyncIterable, AsyncIterator, Awaitable, Callable, Iterable
 from contextlib import AbstractAsyncContextManager
 from typing import ParamSpec, TypeAlias, TypeVar
 
@@ -17,3 +17,7 @@ that return a context-managed async stream::
 """
 
 AnyIterable: TypeAlias = AsyncIterable[T] | Iterable[T]
+"""An asynchronous or synchronous iterable of *T*."""
+
+AnyCallable: TypeAlias = Callable[P, T] | Callable[P, Awaitable[T]]
+"""A callable returning *T* or an awaitable of *T*."""

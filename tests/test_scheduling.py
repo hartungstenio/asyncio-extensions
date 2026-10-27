@@ -1,4 +1,5 @@
 import asyncio
+import threading
 from contextlib import suppress
 from unittest import mock
 
@@ -48,6 +49,28 @@ async def test_heartbeat() -> None:
             await heartbeat(1, mock_fn, 1, 2, name="a")
 
     assert mock_fn.await_args_list == [mock.call(1, 2, name="a")] * 4
+
+
+async def test_heartbeat_sync_function_runs_in_thread() -> None:
+    event_loop_thread = threading.get_ident()
+    started = threading.Event()
+    calls: list[tuple[int, int, int, str]] = []
+
+    def mock_fn(first: int, second: int, *, name: str) -> None:
+        calls.append((threading.get_ident(), first, second, name))
+        started.set()
+
+    task = asyncio.create_task(heartbeat(0, mock_fn, 1, 2, name="a"))
+    try:
+        assert await asyncio.to_thread(started.wait, 1)
+    finally:
+        task.cancel()
+        with suppress(asyncio.CancelledError):
+            await task
+
+    assert calls
+    assert all(call[1:] == (1, 2, "a") for call in calls)
+    assert all(call[0] != event_loop_thread for call in calls)
 
 
 async def test_shielded_returns_coroutine_result() -> None:
