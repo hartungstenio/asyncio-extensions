@@ -125,6 +125,26 @@ async with TaskGroup() as tg:
     await some_long_running_process()
 ```
 
+### repeat_call
+
+The `repeat_call` function invokes a callable immediately, then waits for the
+given interval between subsequent calls. It accepts both asynchronous and
+synchronous callables; synchronous callables run in a separate thread.
+
+```python
+from asyncio_extensions import repeat_call
+
+
+async def ping():
+    pass
+
+
+async with TaskGroup() as tg:
+    tg.create_task(repeat_call(5, ping))
+
+    await some_long_running_process()
+```
+
 ### shielded
 
 The `shielded` function runs a coroutine in a separate task, protecting it from

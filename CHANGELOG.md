@@ -8,6 +8,10 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+### Added
+
+- `repeat_call` coroutine to call a callable immediately and then repeatedly at a given interval.
+
 ### Changed
 
 - `heartbeat` now accepts synchronous callables as well as coroutine functions; synchronous callables run in a separate thread.
