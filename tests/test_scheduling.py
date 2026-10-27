@@ -7,7 +7,7 @@ import pytest
 from faker import Faker
 
 from asyncio_extensions import TaskGroup
-from asyncio_extensions._scheduling import checkpoint, heartbeat, shielded, sleep_forever
+from asyncio_extensions._scheduling import checkpoint, heartbeat, repeat_call, shielded, sleep_forever
 
 from . import noop
 
@@ -71,6 +71,47 @@ async def test_heartbeat_sync_function_runs_in_thread() -> None:
     assert calls
     assert all(call[1:] == (1, 2, "a") for call in calls)
     assert all(call[0] != event_loop_thread for call in calls)
+
+
+async def test_repeat_call_calls_async_function_immediately() -> None:
+    called = asyncio.Event()
+    calls: list[tuple[int, int, str]] = []
+
+    async def mock_fn(first: int, second: int, *, name: str) -> None:
+        calls.append((first, second, name))
+        called.set()
+
+    task = asyncio.create_task(repeat_call(3600, mock_fn, 1, 2, name="a"))
+    try:
+        await asyncio.wait_for(called.wait(), timeout=1)
+    finally:
+        task.cancel()
+        with suppress(asyncio.CancelledError):
+            await task
+
+    assert calls == [(1, 2, "a")]
+
+
+async def test_repeat_call_sync_function_runs_immediately_in_thread() -> None:
+    event_loop_thread = threading.get_ident()
+    started = threading.Event()
+    calls: list[tuple[int, int, int, str]] = []
+
+    def mock_fn(first: int, second: int, *, name: str) -> None:
+        calls.append((threading.get_ident(), first, second, name))
+        started.set()
+
+    task = asyncio.create_task(repeat_call(3600, mock_fn, 1, 2, name="a"))
+    try:
+        assert await asyncio.to_thread(started.wait, 1)
+    finally:
+        task.cancel()
+        with suppress(asyncio.CancelledError):
+            await task
+
+    assert len(calls) == 1
+    assert calls[0][1:] == (1, 2, "a")
+    assert calls[0][0] != event_loop_thread
 
 
 async def test_shielded_returns_coroutine_result() -> None:

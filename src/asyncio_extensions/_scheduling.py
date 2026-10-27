@@ -58,6 +58,29 @@ async def heartbeat(
         await asyncify(fn)(*args, **kwargs)
 
 
+async def repeat_call(
+    interval: float,
+    fn: AnyCallable[P, T],
+    *args: P.args,
+    **kwargs: P.kwargs,
+) -> None:
+    """Call *fn* immediately and repeatedly, waiting *interval* between calls.
+
+    Synchronous callables run in a separate thread.
+
+    Args:
+        interval: Number of seconds to wait between calls.
+        fn: The synchronous or asynchronous callable to invoke.
+        *args: Positional arguments forwarded to *fn*.
+        **kwargs: Keyword arguments forwarded to *fn*.
+    """
+    from ._sync import asyncify  # noqa: PLC0415
+
+    while True:
+        await asyncify(fn)(*args, **kwargs)
+        await asyncio.sleep(interval)
+
+
 async def shielded(coro: Coroutine[Any, Any, T]) -> T:
     """Run *coro* in a task shielded from caller cancellation.
 
