@@ -1,10 +1,8 @@
 """Utility functions."""
 
 import asyncio
-from collections.abc import Coroutine, Generator
+from collections.abc import Callable, Coroutine, Generator
 from typing import Any, Never, ParamSpec, TypeVar
-
-from ._types import AnyCallable
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -37,7 +35,7 @@ async def sleep_forever() -> Never:
 
 async def heartbeat(
     interval: float,
-    fn: AnyCallable[P, T],
+    fn: Callable[P, Any],
     *args: P.args,
     **kwargs: P.kwargs,
 ) -> None:
@@ -60,7 +58,7 @@ async def heartbeat(
 
 async def repeat_call(
     interval: float,
-    fn: AnyCallable[P, T],
+    fn: Callable[P, Any],
     *args: P.args,
     **kwargs: P.kwargs,
 ) -> None:
