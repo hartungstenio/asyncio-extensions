@@ -8,6 +8,8 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+## [1.1.1] - 2026-10-28
+
 ### Fixed
 
 - Corrected the callable type annotations for `heartbeat` and `repeat_call`.
@@ -135,7 +137,8 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 - `checkpoint` function to yield control to the event loop.
 - `sleep_forever` function.
 
-[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/v1.1.0...HEAD
+[unreleased]: https://github.com/hartungstenio/asyncio-extensions/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/hartungstenio/asyncio-extensions/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/hartungstenio/asyncio-extensions/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/hartungstenio/asyncio-extensions/compare/v0.4.0...v1.0.0
 [0.4.0]: https://github.com/hartungstenio/asyncio-extensions/compare/0.3.2...0.4.0
