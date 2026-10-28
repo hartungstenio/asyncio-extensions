@@ -8,7 +8,6 @@ from typing import Any, ParamSpec, TypeVar, cast, overload
 from ._compat import TypeIs, iscoroutinefunction
 from ._compat import markcoroutinefunction as _markcoroutinefunction
 from ._scheduling import checkpoint
-from ._types import AnyCallable
 
 _P = ParamSpec("_P")
 _R = TypeVar("_R")
@@ -30,7 +29,7 @@ def asyncify(func: Callable[_P, Awaitable[_R]], /) -> Callable[_P, Awaitable[_R]
 def asyncify(func: Callable[_P, _R], /) -> Callable[_P, Awaitable[_R]]: ...
 
 
-def asyncify(func: AnyCallable[_P, _R], /) -> Callable[_P, Awaitable[_R]]:
+def asyncify(func: Callable[_P, _R] | Callable[_P, Awaitable[_R]], /) -> Callable[_P, Awaitable[_R]]:
     """Ensure that a callable can be awaited.
 
     If *func* is already a coroutine function, return it unchanged.

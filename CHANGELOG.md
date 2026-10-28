@@ -8,6 +8,10 @@ This project adheres to both [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Corrected the callable type annotations for `heartbeat` and `repeat_call`.
+
 ## [1.1.0] - 2026-10-27
 
 ### Added
